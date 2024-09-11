@@ -7,6 +7,7 @@ import {useState} from "react";
 import {darkColors, primaryColor} from "../colors.ts";
 import CreateEventScreen from "./screens/createEvent.tsx";
 import ManageEvent from "./screens/manageEvent.tsx";
+import SingleEventScreen from "./screens/singleEvent.tsx";
 
 function App() {
 
@@ -18,7 +19,7 @@ function App() {
             colorPrimary: primaryColor['500'],
             colorTextBase: '#000000',
             colorBgBase: '#ffffff',
-
+            colorInfo: primaryColor['500'],
         },
         components: {
             Layout: {
@@ -36,6 +37,7 @@ function App() {
             colorTextBase: '#E4E4E4',
             colorBgBase: darkColors.dark,
             colorBgContainer: '#1F1F1F',
+            colorInfo: primaryColor['500'],
         },
         components: {
             Layout: {
@@ -52,6 +54,7 @@ function App() {
                    <Route path={'/'} element={<Home/>}/>
                    <Route path={'/create-event'} element={<CreateEventScreen/>}/>
                    <Route path={'/manage-events'} element={<ManageEvent/>}/>
+                   <Route path={'/manage-events/:id'} element={<SingleEventScreen/>}/>
                </Route>
            </Routes>
        </BrowserRouter>

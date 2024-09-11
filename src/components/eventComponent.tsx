@@ -1,12 +1,13 @@
 import {EventModel} from "../data/types.ts";
 import {Button, Dropdown, Tag} from "antd";
 import {EllipsisOutlined} from "@ant-design/icons";
+import {Link} from "react-router-dom";
 
 
 export default function EventComponent({event}: {event: EventModel}) {
 
     return (
-        <div>
+        <Link className={'block text-current hover:text-current'} to={`/manage-events/${event.id}`}>
             <div className={'relative'}>
                 <img src={event.poster} className={'aspect-square object-cover w-full rounded-lg'}/>
                 <div className={'absolute right-0 top-0 m-3'}>
@@ -40,6 +41,6 @@ export default function EventComponent({event}: {event: EventModel}) {
                 <p className={'line-clamp-2'}>{event.description}</p>
                 <Button type={'primary'}>View</Button>
             </div>
-        </div>
+        </Link>
     );
 }
