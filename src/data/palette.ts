@@ -1,7 +1,7 @@
 
-import {contrastRatio, getColorPalette, luminance} from "@/data/utils";
+import {contrastRatio, FinalPalette, getColorPalette, luminance} from "./utils";
 import {FinalColor} from "extract-colors/lib/types/Color";
-import {FinalPalette} from "@/data/types";
+
 
 
 
