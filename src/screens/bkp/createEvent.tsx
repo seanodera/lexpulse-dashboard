@@ -77,6 +77,7 @@ const CreateEventScreen = (): JSX.Element => {
             city: '',
             country: '',
             saved: false,
+            district: ''
         },
     };
 
