@@ -8,17 +8,20 @@ export function generateEvents(count: number): EventModel[] {
 
     for (let i = 0; i < count; i++) {
         const eventType = faker.helpers.objectValue(EventType); // Random event category
-        const ticketCount = faker.number.int({ min: 1, max: 3 }); // Generate 1 to 3 ticket types per event
+        const ticketCount = faker.number.int({ min: 3, max: 5 }); // Generate 1 to 3 ticket types per event
 
         // Generate tickets
-        const tickets: Ticket[] = Array.from({ length: ticketCount }, () => ({
-            id: faker.string.alphanumeric(6),
-            name: faker.commerce.productName(),
-            price: faker.number.float({ min: 10, max: 300, multipleOf: 0.01 }),
-            // description: faker.lorem.sentence(),
-            stock: faker.number.int({ min: 50, max: 1000 }),
-            sold: faker.number.int({ min: 0, max: 50 }),
-        }));
+        const tickets: Ticket[] = Array.from({ length: ticketCount }, () => {
+            const stock = faker.number.int({min: 50, max: 1000});
+            return ({
+                id: faker.string.alphanumeric(6),
+                name: faker.commerce.productName(),
+                price: faker.number.float({min: 10, max: 300, multipleOf: 0.01}),
+                // description: faker.lorem.sentence(),
+                stock: stock,
+                sold: faker.number.int({min: 0, max: stock}),
+            });
+        });
 
         // Generate event details
         const event: EventModel = {

@@ -1,11 +1,16 @@
 import {useEffect, useState} from "react";
-import {EventModel} from "../data/types.ts";
+import {EventModel, Ticket} from "../data/types.ts";
 import {generateEvents} from "../data/generator.ts";
 import SingleEventBanner from "../components/event/banner.tsx";
 import {useParams} from "react-router-dom";
-import {Button, Tabs, Tag} from "antd";
+import {Button, Tabs, Tag, Typography} from "antd";
 import moment from "moment";
+import {Doughnut} from "react-chartjs-2";
+import {ArcElement, Chart, Legend, Tooltip} from "chart.js";
+import {extractImageColors} from "../data/utils.tsx";
+import {DownOutlined} from "@ant-design/icons";
 
+Chart.register(ArcElement, Tooltip, Legend);
 
 export default function SingleEventScreen() {
     const {id} = useParams();
@@ -23,22 +28,87 @@ export default function SingleEventScreen() {
 
     return <div>
         <SingleEventBanner event={event}/>
-        <Tabs size={'large'}  className={'px-4'} defaultActiveKey="1" items={[
+        <Tabs size={'large'} className={'px-4'} defaultActiveKey="1" items={[
             {
                 key: '1',
                 label: 'Overview',
+                children: <OverviewTab event={event}/>
             },
             {
                 key: '2',
                 label: 'Tickets',
                 children: <TicketTab event={event}/>,
             }
-        ]} />
+        ]}/>
     </div>
 }
 
 
-export function TicketTab({event}: {event: EventModel}) {
+export function OverviewTab({event}: { event: EventModel }) {
+    const [colors, setColors] = useState<string[]>([]);
+    // Aggregate sold and total counts from tickets
+    const aggregateTickets = (tickets: Ticket[]) => {
+        return tickets.reduce(
+            (acc, ticket) => {
+                acc.sold += ticket.sold;
+                acc.total += ticket.stock;
+                return acc;
+            },
+            {sold: 0, total: 0}
+        );
+    };
+
+    const {sold, total} = aggregateTickets(event.tickets);
+
+    useEffect(() => {
+        async function genColors() {
+            let _colors = await extractImageColors(event.poster);
+            if (_colors.length < event.tickets.length) {
+                const newColors = await extractImageColors(event.cover);
+                _colors = [..._colors, ...newColors];
+            }
+            _colors.sort((a, b) => a.saturation - b.saturation);
+            if (_colors.length > event.tickets.length - 1) {
+                _colors = _colors.slice(0, event.tickets.length);
+            }
+            console.log(_colors.length, event.tickets.length);
+
+            setColors([..._colors.map((c) => c.hex), '#6b7280']);
+        }
+
+        genColors();
+    }, [event.cover, event.poster, event.tickets.length]);
+
+    const data = {
+        labels: [...event.tickets.map(ticket => ticket.name), 'Unsold'],
+        datasets: [
+            {
+                label: 'Tickets',
+                data: [...event.tickets.map(ticket => ticket.sold), total - sold],
+                backgroundColor: colors,
+                hoverBackgroundColor: colors,
+            },
+        ],
+    };
+
+    return <div>
+        <div className={'grid grid-cols-3 gap-8'}>
+            <div className={'col-span-2'}>
+                <div className={'bg-white rounded-lg p-4'}>
+                    <h3 className={'text-xl font-semibold mb-1'}>Description</h3>
+                    <Typography.Paragraph ellipsis={{
+                        rows: 3, expandable: true, symbol: <DownOutlined/>
+                    }}>{event.description}</Typography.Paragraph>
+                </div>
+            </div>
+            <div>
+                <Doughnut data={data}/>
+            </div>
+        </div>
+    </div>
+}
+
+export function TicketTab({event}: { event: EventModel }) {
     const [editMode, setEditMode] = useState<boolean>(false)
     return <div>
         <div className={'flex justify-between'}>
@@ -46,7 +116,8 @@ export function TicketTab({event}: {event: EventModel}) {
                 <h2 className={'font-semibold text-xl my-0'}>Tickets</h2>
                 {editMode && <Tag color={'processing'}>Edit Mode</Tag>}
             </div>
-            <Button onClick={() => setEditMode(!editMode)} ghost type={'primary'} danger={editMode} >{editMode? 'Cancel' : 'Edit'}</Button>
+            <Button onClick={() => setEditMode(!editMode)} ghost type={'primary'}
+                    danger={editMode}>{editMode ? 'Cancel' : 'Edit'}</Button>
         </div>
         <div className={'grid grid-cols-3 gap-8 mt-4'}>
             {event.tickets.map((ticket, index) => <div key={index} className={'rounded-lg shadow bg-white p-4'}>
