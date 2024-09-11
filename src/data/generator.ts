@@ -1,7 +1,7 @@
 
 // Function to generate fake events using Faker
 import {faker} from "@faker-js/faker";
-import {EventModel, EventType, Ticket} from "./types";
+import {EventModel, EventType, Ticket, Venue} from "./types";
 
 export function generateEvents(count: number): EventModel[] {
     const events: EventModel[] = [];
@@ -22,7 +22,7 @@ export function generateEvents(count: number): EventModel[] {
                 sold: faker.number.int({min: 0, max: stock}),
             });
         });
-
+        const venueSaved = faker.datatype.boolean();
         // Generate event details
         const event: EventModel = {
             name: faker.company.catchPhraseNoun(),
@@ -40,7 +40,9 @@ export function generateEvents(count: number): EventModel[] {
                 street: faker.location.streetAddress(),
                 city: faker.location.city(),
                 country: faker.location.country(),
-                saved:false,
+                saved: venueSaved,
+                id: venueSaved ? faker.string.alphanumeric(8) : undefined,
+                district: faker.location.state()
             }
         };
 
@@ -48,4 +50,36 @@ export function generateEvents(count: number): EventModel[] {
     }
 
     return events;
+}
+
+export function generateVenues(count: number, {id}: {id?: string}): Venue[] {
+    const venues:Venue[] = [];
+     {
+        for (let i = 0; i < count; i++) {
+            const venue: Venue = {
+                name: faker.word.noun({strategy: 'fail'}),
+                street: faker.location.streetAddress(),
+                city: faker.location.city(),
+                country: faker.location.country(),
+                district: faker.location.state(),
+                id: id ? id : faker.string.alphanumeric(8),
+                links: [
+                    {
+                        name: 'Website',
+                        url: faker.internet.url(),
+                    }
+                ],
+                followers: faker.number.int({min: 2, max: 300}),
+                cover: faker.image.urlLoremFlickr({category: 'venue'}),
+                capacity: faker.number.int({min: 2, max: 400}),
+                type: faker.word.sample({strategy: 'fail'}),
+                yearEvents: faker.number.int(40),
+                phone: faker.phone.number({style: "international"}),
+                email: faker.internet.email({}),
+            };
+            venues.push(venue);
+        }
+    }
+
+    return venues;
 }

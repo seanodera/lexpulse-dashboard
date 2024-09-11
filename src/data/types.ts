@@ -44,6 +44,7 @@ export interface EventModel {
         street: string;
         city: string;
         country: string;
+        district: string;
         saved: boolean;
         id?: string;
     };
@@ -74,11 +75,17 @@ export interface Venue {
     name: string;
     street: string;
     city: string;
+    district: string;
     country: string;
     links: { name: string, url: string }[];
     followers: number;
     cover: string;
-
+    capacity: number;
+    type: string;
+    yearEvents: number | 0;
+    description?: string;
+    phone: string;
+    email: string;
 }
 
 export interface Purchase {

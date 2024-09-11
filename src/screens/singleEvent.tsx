@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import {EventModel, Ticket} from "../data/types.ts";
-import {generateEvents} from "../data/generator.ts";
+import {EventModel, Ticket, Venue} from "../data/types.ts";
+import {generateEvents, generateVenues} from "../data/generator.ts";
 import SingleEventBanner from "../components/event/banner.tsx";
 import {useParams} from "react-router-dom";
 import {Button, Tabs, Tag, Typography} from "antd";
@@ -46,6 +46,7 @@ export default function SingleEventScreen() {
 
 export function OverviewTab({event}: { event: EventModel }) {
     const [colors, setColors] = useState<string[]>([]);
+    const [venue, setVenue] = useState<Venue>();
     // Aggregate sold and total counts from tickets
     const aggregateTickets = (tickets: Ticket[]) => {
         return tickets.reduce(
@@ -75,9 +76,11 @@ export function OverviewTab({event}: { event: EventModel }) {
 
             setColors([..._colors.map((c) => c.hex), '#6b7280']);
         }
-
+        if (event.venue.saved && event.venue.id){
+            setVenue(generateVenues(1,{id: event.venue.id})[0]);
+        }
         genColors();
-    }, [event.cover, event.poster, event.tickets.length]);
+    }, [event]);
 
     const data = {
         labels: [...event.tickets.map(ticket => ticket.name), 'Unsold'],
@@ -93,12 +96,64 @@ export function OverviewTab({event}: { event: EventModel }) {
 
     return <div>
         <div className={'grid grid-cols-3 gap-8'}>
-            <div className={'col-span-2'}>
+            <div className={'col-span-2 space-y-8'}>
                 <div className={'bg-white rounded-lg p-4'}>
                     <h3 className={'text-xl font-semibold mb-1'}>Description</h3>
                     <Typography.Paragraph ellipsis={{
                         rows: 3, expandable: true, symbol: <DownOutlined/>
                     }}>{event.description}</Typography.Paragraph>
+                </div>
+                <div className={'bg-white rounded-lg p-4'}>
+                    <h3 className={'text-xl font-semibold mb-2'}>Venue Details</h3>
+                    <div className={'grid grid-cols-2 gap-8'}>
+                        <div>
+                            <h4 className={'text-gray-500 font-medium'}>Venue Name</h4>
+                            <h3 className={'font-semibold'}>{event.venue.name}</h3>
+                        </div>
+                        <div>
+                            <h4 className={'text-gray-500 font-medium'}>Venue Saved</h4>
+                            <h3 className={'font-semibold'}>{event.venue.saved ? 'Registered' : 'No'}</h3>
+                        </div>
+                        <div>
+                            <h4 className={'text-gray-500 font-medium'}>Venue Street</h4>
+                            <h3 className={'font-semibold'}>{event.venue.street}</h3>
+                        </div>
+                        <div>
+                            <h4 className={'text-gray-500 font-medium'}>Venue District</h4>
+                            <h3 className={'font-semibold'}>{event.venue.district}</h3>
+                        </div>
+                        <div>
+                            <h4 className={'text-gray-500 font-medium'}>Venue City</h4>
+                            <h3 className={'font-semibold'}>{event.venue.city}</h3>
+                        </div>
+                        <div>
+                            <h4 className={'text-gray-500 font-medium'}>Venue Country</h4>
+                            <h3 className={'font-semibold'}>{event.venue.country}</h3>
+                        </div>
+                        {venue && <div className={'col-span-2 grid grid-cols-2 gap-8'}>
+
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Venue Capacity</h4>
+                                <h3 className={'font-semibold'}>{venue.capacity} People</h3>
+                            </div>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Venue Followers</h4>
+                                <h3 className={'font-semibold'}>{venue.followers}</h3>
+                            </div>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Venue Email</h4>
+                                <h3 className={'font-semibold'}>{venue.email}</h3>
+                            </div>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Venue Phone</h4>
+                                <h3 className={'font-semibold'}>{venue.phone}</h3>
+                            </div>
+                        </div>}
+                    </div>
+                </div>
+
+                <div>
+
                 </div>
             </div>
             <div>
@@ -113,7 +168,7 @@ export function TicketTab({event}: { event: EventModel }) {
     return <div>
         <div className={'flex justify-between'}>
             <div className={'flex items-center gap-2'}>
-                <h2 className={'font-semibold text-xl my-0'}>Tickets</h2>
+            <h2 className={'font-semibold text-xl my-0'}>Tickets</h2>
                 {editMode && <Tag color={'processing'}>Edit Mode</Tag>}
             </div>
             <Button onClick={() => setEditMode(!editMode)} ghost type={'primary'}
