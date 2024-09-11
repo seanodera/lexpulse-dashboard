@@ -1,34 +1,33 @@
-import  { useState } from 'react';
-import {Formik, Field, Form, FieldArray, ErrorMessage} from 'formik';
-import {Button, DatePicker, Upload, message, Select, Input} from 'antd';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
+import {useState} from 'react';
+import {ErrorMessage, Field, Form, Formik} from 'formik';
+import {Button, DatePicker, Input, message, Select, Upload} from 'antd';
+import {UploadOutlined} from '@ant-design/icons';
 import * as Yup from 'yup';
-import { EventType, Ticket, Venue } from '../data/types';
-import { RcFile } from 'antd/lib/upload';
+import {EventType, Venue} from '../data/types';
+import {RcFile} from 'antd/es/upload'; // Correct import path
 
 // List of event categories based on EventType
 const eventCategories = Object.keys(EventType);
 
+// Validation schema using Yup
+const validationSchema = Yup.object().shape({
+    name: Yup.string().required('Event Name is required'),
+    description: Yup.string().required('Description is required'),
+    date: Yup.date().required('Event Date is required').nullable(),
+    category: Yup.string().required('Category is required'),
+    tickets: Yup.array().of(
+        Yup.object().shape({
+            name: Yup.string().required('Ticket name is required'),
+            price: Yup.number().required('Ticket price is required').min(1, 'Price cannot be less than $1'),
+            stock: Yup.number().required('Stock is required').min(1, 'Stock cannot be less than 1'),
+        })
+    ),
+});
+
 const CreateEventScreen = () => {
     const inputCls = 'mt-1 block border-solid border-gray-500 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary w-full';
     const [isNewVenue, setIsNewVenue] = useState(false);
-    const savedVenues: Venue[] = [];
-    // const [tickets, setTickets] = useState<Ticket[]>([]);
-
-    // Validation schema using Yup
-    const validationSchema = Yup.object().shape({
-        name: Yup.string().required('Event Name is required'),
-        description: Yup.string().required('Description is required'),
-        date: Yup.date().required('Event Date is required').nullable(),
-        category: Yup.string().required('Category is required'),
-        tickets: Yup.array().of(
-            Yup.object().shape({
-                name: Yup.string().required('Ticket name is required'),
-                price: Yup.number().required('Ticket price is required').min(1, 'Price cannot be less than $1'),
-                stock: Yup.number().required('Stock is required').min(1, 'Stock cannot be less than 1'),
-            })
-        ),
-    });
+    const savedVenues: Venue[] = []; // Initialized inside the function
 
     // Form submit handler
     const handleSubmit = (values: any) => {
@@ -48,8 +47,6 @@ const CreateEventScreen = () => {
 
     return (
         <div className="px-4 py-4">
-
-
             <Formik
                 initialValues={{
                     name: '',
@@ -65,25 +62,25 @@ const CreateEventScreen = () => {
             >
                 {({ values, setFieldValue }) => (
                     <Form className="space-y-4">
-                        <div className={'flex justify-between items-center '}>
-                            <div className={'flex justify-between items-center w-full'}>
+                        <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center w-full">
                                 <h2 className="text-2xl font-semibold mb-4">Create New Event</h2>
-                                <div className={'flex gap-2'}>
-                                    <Button type={'primary'}>Preview</Button>
+                                <div className="flex gap-2">
+                                    <Button type="primary">Preview</Button>
                                     <Button type="primary" htmlType="submit">
                                         Create Event
                                     </Button>
                                 </div>
                             </div>
                         </div>
-                        <div className={'grid grid-cols-3 gap-8'}>
+                        <div className="grid grid-cols-3 gap-8">
                             <div>
-                                <h3 className={'font-semibold text-lg'}>Poster Image</h3>
+                                <h3 className="font-semibold text-lg">Poster Image</h3>
                                 <Upload
                                     beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'poster')}
                                     showUploadList={false}
                                     itemRender={(_originNode, file) => {
-                                        return <img src={URL.createObjectURL(file.originFileObj as File)} className={'w-full aspect-[0.5] rounded-lg'} alt={''}/>
+                                        return <img src={URL.createObjectURL(file.originFileObj as File)} className="w-full aspect-[0.5] rounded-lg" alt="" />;
                                     }}
                                 >
                                     {values.poster ? (
@@ -93,14 +90,14 @@ const CreateEventScreen = () => {
                                     )}
                                 </Upload>
                             </div>
-                            <div className={'col-span-2 px-4'}>
-                                <h4 className={'font-semibold text-lg'}>Cover Image</h4>
+                            <div className="col-span-2 px-4">
+                                <h4 className="font-semibold text-lg">Cover Image</h4>
                                 <Upload
                                     beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'cover')}
                                     showUploadList={false}
-                                    rootClassName={'w-full'}
+                                    rootClassName="w-full"
                                     itemRender={(_originNode, file) => {
-                                        return <img src={URL.createObjectURL(file.originFileObj as File)} className={'w-full aspect-[0.5] rounded-lg'} alt={''}/>
+                                        return <img src={URL.createObjectURL(file.originFileObj as File)} className="w-full aspect-[0.5] rounded-lg" alt="" />;
                                     }}
                                 >
                                     {values.cover ? (
@@ -111,31 +108,33 @@ const CreateEventScreen = () => {
                                 </Upload>
                             </div>
                         </div>
-
-                        <fieldset className={'grid grid-cols-2 gap-8'}>
-                            <div className={'bg-white rounded-xl p-4 space-y-4'}>
-                                <h1 className={'text-2xl'}>Event Details</h1>
-
+                        <fieldset className="grid grid-cols-2 gap-8">
+                            <div className="bg-white rounded-xl p-4 space-y-4">
+                                <h1 className="text-2xl">Event Details</h1>
                                 {/* Event Name */}
                                 <Field name="name">
                                     {({ field }: any) => (
                                         <div>
-                                            <label htmlFor="name" className={'block font-semibold'}>Event Name</label>
+                                            <label htmlFor="name" className="block font-semibold">
+                                                Event Name
+                                            </label>
                                             <input {...field} placeholder="Enter Event Name" className={inputCls} />
+                                            <ErrorMessage name="name" component="div" className="text-red-500" />
                                         </div>
                                     )}
                                 </Field>
-
                                 {/* Event Description */}
                                 <Field name="description">
                                     {({ field }: any) => (
                                         <div>
-                                            <label htmlFor="description" className={'block font-semibold'}>Description</label>
+                                            <label htmlFor="description" className="block font-semibold">
+                                                Description
+                                            </label>
                                             <textarea {...field} rows={4} placeholder="Enter Event Description" className={inputCls} />
+                                            <ErrorMessage name="description" component="div" className="text-red-500" />
                                         </div>
                                     )}
                                 </Field>
-
                                 {/* Event Category */}
                                 <Field name="category" as="select" className={inputCls}>
                                     {eventCategories.map((category: string) => (
@@ -144,7 +143,6 @@ const CreateEventScreen = () => {
                                         </option>
                                     ))}
                                 </Field>
-
                                 {/* Event Date */}
                                 <Field name="date">
                                     {({ field, form }: any) => (
@@ -156,16 +154,19 @@ const CreateEventScreen = () => {
                                                 onChange={(date) => form.setFieldValue(field.name, date)}
                                                 className="w-full"
                                             />
+                                            <ErrorMessage name="date" component="div" className="text-red-500" />
                                         </div>
                                     )}
                                 </Field>
                             </div>
-                            <div className={'bg-white rounded-xl p-4 space-y-4'}>
+                            <div className="bg-white rounded-xl p-4 space-y-4">
                                 {/* Venue Selection */}
                                 <div>
-                                    <label className={'block font-semibold'} htmlFor="venue">Venue</label>
+                                    <label className="block font-semibold" htmlFor="venue">
+                                        Venue
+                                    </label>
                                     <Select
-                                        onChange={(value) => {
+                                        onChange={(value: any) => {
                                             if (value === 'new') {
                                                 setIsNewVenue(true);
                                             } else {
@@ -177,99 +178,48 @@ const CreateEventScreen = () => {
                                         placeholder="Select Venue or Add New"
                                     >
                                         {savedVenues.map((venue) => (
-                                            <Option key={venue.id} value={venue.id}>
+                                            <Select.Option key={venue.id} value={venue.id}>
                                                 {venue.name} - {venue.city}, {venue.country}
-                                            </Option>
+                                            </Select.Option>
                                         ))}
-                                        <Option value="new">Add New Venue</Option>
+                                        <Select.Option value="new">Add New Venue</Select.Option>
                                     </Select>
                                 </div>
-
                                 {isNewVenue && (
                                     <>
                                         <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.name">Venue Name</label>
+                                            <label className="block font-semibold" htmlFor="venue.name">
+                                                Venue Name
+                                            </label>
                                             <Field className={inputCls} name="venue.name" as={Input} placeholder="Enter Venue Name" />
                                             <ErrorMessage name="venue.name" component="div" className="text-red-500" />
                                         </div>
                                         <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.street">Street</label>
+                                            <label className="block font-semibold" htmlFor="venue.street">
+                                                Street
+                                            </label>
                                             <Field className={inputCls} name="venue.street" as={Input} placeholder="Enter Street" />
                                             <ErrorMessage name="venue.street" component="div" className="text-red-500" />
                                         </div>
                                         <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.city">City</label>
+                                            <label className="block font-semibold" htmlFor="venue.city">
+                                                City
+                                            </label>
                                             <Field className={inputCls} name="venue.city" as={Input} placeholder="Enter City" />
                                             <ErrorMessage name="venue.city" component="div" className="text-red-500" />
                                         </div>
                                         <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.country">Country</label>
-                                            <Field className={inputCls} name="venue.country" as={Input} placeholder="Enter Country" />
-                                            <ErrorMessage name="venue.country" component="div" className="text-red-500" />
+                                            <label className="block font-semibold" htmlFor="venue.country">
+                                                Country
+                                            </label>
                                         </div>
+                                        <Field className={inputCls} name="venue.country" as={Input} placeholder="Enter Country" />
+                                        <ErrorMessage name="venue.country" component="div" className="text-red-500" />
                                     </>
                                 )}
                             </div>
                         </fieldset>
-
-
-                        {/* Tickets Section */}
-                        <div className={'bg-white rounded-xl p-4 space-y-4'}>
-                            <div className={'flex justify-between'}>
-                                <h1 className={'text-2xl'}>Tickets</h1>
-                                <Button type={'primary'} onClick={() => {
-                                    setFieldValue('tickets', [
-                                        ...values.tickets,
-                                        { id: Date.now().toString(), name: '', price: 0, stock: 0 },
-                                    ]);
-                                }}>
-                                    <PlusOutlined /> Add Ticket
-                                </Button>
-                            </div>
-
-                            <FieldArray name="tickets">
-                                {({ remove }) => (
-                                    <div className={'grid grid-cols-3 gap-8'}>
-                                        {values.tickets.map((ticket: Ticket, index: number) => (
-                                            <fieldset key={index} className={'space-y-2'}>
-                                                <div className={'flex items-center justify-between'}>
-                                                    <h3 className={'font-semibold'}>Ticket {index + 1}</h3>
-                                                    <Button danger onClick={() => remove(index)}>
-                                                        Remove Ticket
-                                                    </Button>
-                                                </div>
-                                                <Field name={`tickets[${index}].name`}>
-                                                    {({ field }: any) => (
-                                                        <div>
-                                                            <label className={'block font-semibold'}>Name</label>
-                                                            <input {...field} placeholder="Ticket Name" className={inputCls} />
-                                                        </div>
-                                                    )}
-                                                </Field>
-                                                <Field name={`tickets[${index}].price`}>
-                                                    {({ field }: any) => (
-                                                        <div>
-                                                            <label className={'block font-semibold'}>Price</label>
-                                                            <input {...field} type="number" placeholder="Price" className={inputCls} min={1} />
-                                                        </div>
-                                                    )}
-                                                </Field>
-                                                <Field name={`tickets[${index}].stock`}>
-                                                    {({ field }: any) => (
-                                                        <div>
-                                                            <label className={'block font-semibold'}>Stock</label>
-                                                            <input {...field} type="number" placeholder="Stock" className={inputCls} min={1} />
-                                                        </div>
-                                                    )}
-                                                </Field>
-                                            </fieldset>
-                                        ))}
-                                    </div>
-                                )}
-                            </FieldArray>
-                        </div>
                     </Form>
-
                 )}
             </Formik>
         </div>

@@ -1,19 +1,24 @@
-import  {useState} from 'react';
-import {ErrorMessage, Field, FieldArray, Form, Formik} from 'formik';
-import {Button, DatePicker, Input, InputNumber, message, Select} from 'antd';
+import { useState } from 'react';
+import { ErrorMessage, Field, FieldArray, Form, Formik } from 'formik';
+import { Button, DatePicker, Input, InputNumber, message, Select } from 'antd';
 import * as Yup from 'yup';
-import {PlusOutlined} from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import {EventModel, EventType, Venue} from '../../data/types.ts'; // Assuming you import the types correctly
+import {
+    EventModel,
+    EventType,
+    Venue
+} from '../../data/types'; // assuming you import the types correctly
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 const eventCategories = Object.keys(EventType);
 
-const CreateEventScreen = () => {
+const CreateEventScreen = (): JSX.Element => {
     const [isNewVenue, setIsNewVenue] = useState(false);
     const savedVenues: Venue[] = [];
+
     // Validation schema using Yup
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Event Name is required'),
@@ -25,27 +30,25 @@ const CreateEventScreen = () => {
             Yup.object().shape({
                 name: Yup.string().required('Ticket name is required'),
                 price: Yup.number().required('Ticket price is required').min(0, 'Price cannot be negative'),
-                stock: Yup.number().required('Stock is required').min(1, 'At least 1 ticket must be available'),
+                stock: Yup.number().min(1, 'At least 1 ticket must be available').required('Stock is required'),
             })
         ),
         venue: Yup.object().shape({
             name: Yup.string().required('Venue name is required'),
-            street: Yup.string().when('saved', {
-                is: false,
-                then: Yup.string().required('Street is required for new venues'),
-            }),
-            city: Yup.string().when('saved', {
-                is: false,
-                then: Yup.string().required('City is required for new venues'),
-            }),
-            country: Yup.string().when('saved', {
-                is: false,
-                then: Yup.string().required('Country is required for new venues'),
-            }),
-        }),
+            street: Yup.string().when('saved', (saved, schema) =>
+                saved[0] === false ? schema.required('Street is required for new venues') : schema
+            ),
+            city: Yup.string().when('saved', (saved, schema) =>
+                saved[0] === false ? schema.required('City is required for new venues') : schema
+            ),
+            country: Yup.string().when('saved', (saved, schema) =>
+                saved[0] === false ? schema.required('Country is required for new venues') : schema
+            )
+        })
     });
 
-    // Initial values for the form
+
+// Initial values for the form
     const initialValues: EventModel = {
         name: '',
         poster: '',
@@ -61,7 +64,6 @@ const CreateEventScreen = () => {
                 id: '',
                 name: '',
                 price: 0,
-                // description: '',
                 stock: 10,
                 sold: 0,
                 saleStart: new Date(),
@@ -87,12 +89,7 @@ const CreateEventScreen = () => {
     return (
         <div className="px-4 py-4">
             <h2 className="text-2xl mb-4">Create New Event</h2>
-
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={onSubmit}
-            >
+            <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
                 {({ values, setFieldValue }) => (
                     <Form className="space-y-4">
                         {/* Event Name */}
@@ -101,14 +98,12 @@ const CreateEventScreen = () => {
                             <Field name="name" as={Input} placeholder="Enter Event Name" />
                             <ErrorMessage name="name" component="div" className="text-red-500" />
                         </div>
-
                         {/* Event Description */}
                         <div>
                             <label htmlFor="description">Description</label>
                             <Field name="description" as={TextArea} rows={4} placeholder="Enter Event Description" />
                             <ErrorMessage name="description" component="div" className="text-red-500" />
                         </div>
-
                         {/* Event Category */}
                         <div>
                             <label htmlFor="category">Category</label>
@@ -121,7 +116,6 @@ const CreateEventScreen = () => {
                             </Field>
                             <ErrorMessage name="category" component="div" className="text-red-500" />
                         </div>
-
                         {/* Event Date */}
                         <div>
                             <label htmlFor="date">Event Date</label>
@@ -134,7 +128,6 @@ const CreateEventScreen = () => {
                             />
                             <ErrorMessage name="date" component="div" className="text-red-500" />
                         </div>
-
                         {/* Venue Selection */}
                         <div>
                             <label htmlFor="venue">Venue</label>
@@ -158,7 +151,6 @@ const CreateEventScreen = () => {
                                 <Option value="new">Add New Venue</Option>
                             </Select>
                         </div>
-
                         {isNewVenue && (
                             <>
                                 <div>
@@ -183,7 +175,6 @@ const CreateEventScreen = () => {
                                 </div>
                             </>
                         )}
-
                         {/* Ticket Information */}
                         <FieldArray name="tickets">
                             {({ push, remove }) => (
@@ -211,16 +202,25 @@ const CreateEventScreen = () => {
                                             </Button>
                                         </div>
                                     ))}
-                                    <Button type="dashed" onClick={() => push({ id: '', name: '', price: 0, stock: 0, sold: 0, saleStart: new Date(), saleEnd: new Date() })}>
+                                    <Button
+                                        type="dashed"
+                                        onClick={() =>
+                                            push({
+                                                id: '',
+                                                name: '',
+                                                price: 0,
+                                                stock: 10,
+                                                sold: 0,
+                                                saleStart: new Date(),
+                                                saleEnd: new Date(),
+                                            })
+                                        }
+                                    >
                                         <PlusOutlined /> Add Ticket
                                     </Button>
                                 </>
                             )}
                         </FieldArray>
-
-
-
-                        {/* Submit Button */}
                         <div>
                             <Button type="primary" htmlType="submit">
                                 Create Event
