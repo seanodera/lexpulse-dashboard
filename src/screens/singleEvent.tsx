@@ -3,12 +3,11 @@ import {EventModel, Ticket, Venue} from "../data/types.ts";
 import {generateEvents, generateVenues} from "../data/generator.ts";
 import SingleEventBanner from "../components/event/banner.tsx";
 import {useParams} from "react-router-dom";
-import {Button, Tabs, Tag, Typography} from "antd";
+import {Button, Card, Tabs, Tag, Typography} from "antd";
 import moment from "moment";
 import {Doughnut} from "react-chartjs-2";
 import {ArcElement, Chart, Legend, Tooltip} from "chart.js";
 import {extractImageColors} from "../data/utils.tsx";
-import {DownOutlined} from "@ant-design/icons";
 
 Chart.register(ArcElement, Tooltip, Legend);
 
@@ -100,7 +99,7 @@ export function OverviewTab({event}: { event: EventModel }) {
                 <div className={'bg-white rounded-lg p-4'}>
                     <h3 className={'text-xl font-semibold mb-1'}>Description</h3>
                     <Typography.Paragraph ellipsis={{
-                        rows: 3, expandable: true, symbol: <DownOutlined/>
+                        rows: 3, expandable: 'collapsible' ,
                     }}>{event.description}</Typography.Paragraph>
                 </div>
                 <div className={'bg-white rounded-lg p-4'}>
@@ -148,6 +147,13 @@ export function OverviewTab({event}: { event: EventModel }) {
                                 <h4 className={'text-gray-500 font-medium'}>Venue Phone</h4>
                                 <h3 className={'font-semibold'}>{venue.phone}</h3>
                             </div>
+                            <div className={'col-span-2'}>
+                                <h4 className={'text-gray-500 font-medium'}>Venue Links</h4>
+                                <div className={'flex gap-2 items-center'}>
+                                    <Button href={`https://lexpulse-web.vercel.app/venue/${venue.id}`} type={'link'} className={'text-primary'}>Venue Page</Button>
+                                    {venue.links.map(link => <Button href={link.url} type={'link'} className={'text-dark'}>{link.name}</Button> )}
+                                </div>
+                            </div>
                         </div>}
                     </div>
                 </div>
@@ -157,7 +163,9 @@ export function OverviewTab({event}: { event: EventModel }) {
                 </div>
             </div>
             <div>
-                <Doughnut data={data}/>
+                <Card title={'Tickets Insight'}>
+                    <Doughnut  data={data}/>
+                </Card>
             </div>
         </div>
     </div>

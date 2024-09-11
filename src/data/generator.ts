@@ -34,7 +34,7 @@ export function generateEvents(count: number): EventModel[] {
             id: faker.string.alphanumeric(8), // Unique event ID
             category: eventType as EventType, // Random event category
             tickets: tickets, // Tickets array
-            description: faker.lorem.paragraphs({min: 2, max: 3}),
+            description: faker.lorem.paragraphs({min: 2, max: 8}),
             venue: {
                 name: faker.word.noun(),
                 street: faker.location.streetAddress(),
