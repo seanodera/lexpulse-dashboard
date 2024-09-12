@@ -10,10 +10,11 @@ import {
     UserSwitchOutlined
 } from "@ant-design/icons";
 
+import {Link} from "react-router-dom";
 
 export default function SingleEventBanner({event}: { event: EventModel }) {
 
-    return <div className={'bg-cover bg-no-repeat shadow'} style={{
+    return <div className={'bg-cover bg-center bg-no-repeat shadow'} style={{
         backgroundImage: `url("${event.cover}")`
     }}>
         <div className={'py-8 px-16 backdrop-blur bg-dark bg-opacity-30 text-white grid grid-cols-4 gap-8'}>
@@ -25,7 +26,7 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
             <div className={'col-span-3'}>
                 <div className={'flex justify-between items-center w-full'}>
                     <h1 className={'text-3xl font-semibold capitalize'}>{event.name}</h1>
-                    <div><Dropdown.Button type={'primary'} menu={{
+                    <Link className={'block'} to={`/manage-events/${event.id}/edit`}><Dropdown.Button type={'primary'} menu={{
                         items: [
                             {
                                 key: 0,
@@ -55,8 +56,8 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                             }
                         ]
                     }}>
-                        Edit Event
-                    </Dropdown.Button></div>
+                   Edit Event
+                    </Dropdown.Button></Link>
                 </div>
                 <div className={'grid grid-cols-3 gap-8'}>
                     <div className={'mt-3'}>

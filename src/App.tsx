@@ -8,6 +8,7 @@ import {darkColors, primaryColor} from "../colors.ts";
 import CreateEventScreen from "./screens/createEvent.tsx";
 import ManageEvent from "./screens/manageEvent.tsx";
 import SingleEventScreen from "./screens/singleEvent.tsx";
+import EditEventScreen from "./screens/editEvent.tsx";
 
 function App() {
 
@@ -55,6 +56,7 @@ function App() {
                    <Route path={'/create-event'} element={<CreateEventScreen/>}/>
                    <Route path={'/manage-events'} element={<ManageEvent/>}/>
                    <Route path={'/manage-events/:id'} element={<SingleEventScreen/>}/>
+                   <Route path={'/manage-events/:id/edit'} element={<EditEventScreen/>}/>
                </Route>
            </Routes>
        </BrowserRouter>

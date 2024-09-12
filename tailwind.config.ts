@@ -3,6 +3,7 @@ import {darkColors, primaryColor} from "./colors.js";
 import forms from '@tailwindcss/forms';
 
 export default {
+    important: true,
   content: [
       './src/**/*.{js,ts,jsx,tsx}',
       './src/screens/**/*.{js,ts,jsx,tsx}',
