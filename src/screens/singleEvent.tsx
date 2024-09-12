@@ -7,7 +7,7 @@ import {Button, Card, Tabs, Tag, Typography} from "antd";
 import moment from "moment";
 import {Doughnut} from "react-chartjs-2";
 import {ArcElement, Chart, Legend, Tooltip} from "chart.js";
-import {extractImageColors} from "../data/utils.tsx";
+import {contrastRatio, extractImageColors} from "../data/utils.tsx";
 
 Chart.register(ArcElement, Tooltip, Legend);
 
@@ -63,11 +63,22 @@ export function OverviewTab({event}: { event: EventModel }) {
     useEffect(() => {
         async function genColors() {
             let _colors = await extractImageColors(event.poster);
-            if (_colors.length < event.tickets.length) {
-                const newColors = await extractImageColors(event.cover);
-                _colors = [..._colors, ...newColors];
-            }
-            _colors.sort((a, b) => a.saturation - b.saturation);
+
+            const newColors = await extractImageColors(event.cover);
+            _colors = [..._colors, ...newColors];
+
+            _colors.filter((value) => contrastRatio(value, {
+                red: 255, green: 255, blue: 255, saturation: 1,
+                hex: "#FFFFFF",
+                area: 0,
+                hue: 0,
+                lightness: 0,
+                intensity: 0
+            }) > 4.5);
+
+            _colors.sort((a, b) => {
+                return b.saturation - a.saturation;
+            });
             if (_colors.length > event.tickets.length - 1) {
                 _colors = _colors.slice(0, event.tickets.length);
             }
@@ -75,8 +86,9 @@ export function OverviewTab({event}: { event: EventModel }) {
 
             setColors([..._colors.map((c) => c.hex), '#6b7280']);
         }
-        if (event.venue.saved && event.venue.id){
-            setVenue(generateVenues(1,{id: event.venue.id})[0]);
+
+        if (event.venue.saved && event.venue.id) {
+            setVenue(generateVenues(1, {id: event.venue.id})[ 0 ]);
         }
         genColors();
     }, [event]);
@@ -86,7 +98,7 @@ export function OverviewTab({event}: { event: EventModel }) {
         datasets: [
             {
                 label: 'Tickets',
-                data: [...event.tickets.map(ticket => ticket.sold), total - sold],
+                data: [...event.tickets.map(ticket => ticket.sold).sort((b, a) => a - b), total - sold],
                 backgroundColor: colors,
                 hoverBackgroundColor: colors,
             },
@@ -99,7 +111,7 @@ export function OverviewTab({event}: { event: EventModel }) {
                 <div className={'bg-white rounded-lg p-4'}>
                     <h3 className={'text-xl font-semibold mb-1'}>Description</h3>
                     <Typography.Paragraph ellipsis={{
-                        rows: 3, expandable: 'collapsible' ,
+                        rows: 3, expandable: 'collapsible',
                     }}>{event.description}</Typography.Paragraph>
                 </div>
                 <div className={'bg-white rounded-lg p-4'}>
@@ -150,8 +162,10 @@ export function OverviewTab({event}: { event: EventModel }) {
                             <div className={'col-span-2'}>
                                 <h4 className={'text-gray-500 font-medium'}>Venue Links</h4>
                                 <div className={'flex gap-2 items-center'}>
-                                    <Button href={`https://lexpulse-web.vercel.app/venue/${venue.id}`} type={'link'} className={'text-primary'}>Venue Page</Button>
-                                    {venue.links.map(link => <Button href={link.url} type={'link'} className={'text-dark'}>{link.name}</Button> )}
+                                    <Button href={`https://lexpulse-web.vercel.app/venue/${venue.id}`} type={'link'}
+                                            className={'text-primary'}>Venue Page</Button>
+                                    {venue.links.map(link => <Button href={link.url} type={'link'}
+                                                                     className={'text-dark'}>{link.name}</Button>)}
                                 </div>
                             </div>
                         </div>}
@@ -164,7 +178,7 @@ export function OverviewTab({event}: { event: EventModel }) {
             </div>
             <div>
                 <Card title={'Tickets Insight'}>
-                    <Doughnut  data={data}/>
+                    <Doughnut data={data}/>
                 </Card>
             </div>
         </div>
@@ -176,7 +190,7 @@ export function TicketTab({event}: { event: EventModel }) {
     return <div>
         <div className={'flex justify-between'}>
             <div className={'flex items-center gap-2'}>
-            <h2 className={'font-semibold text-xl my-0'}>Tickets</h2>
+                <h2 className={'font-semibold text-xl my-0'}>Tickets</h2>
                 {editMode && <Tag color={'processing'}>Edit Mode</Tag>}
             </div>
             <Button onClick={() => setEditMode(!editMode)} ghost type={'primary'}

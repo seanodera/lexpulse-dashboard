@@ -79,6 +79,9 @@ const CreateEventScreen = (): JSX.Element => {
             saved: false,
             district: ''
         },
+        createdAt: new Date(),
+        minAge: 0,
+        dress: ''
     };
 
     // Submit function

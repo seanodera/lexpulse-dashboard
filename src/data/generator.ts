@@ -26,15 +26,16 @@ export function generateEvents(count: number): EventModel[] {
         // Generate event details
         const event: EventModel = {
             name: faker.company.catchPhraseNoun(),
-            poster: faker.image.urlLoremFlickr({ category:'poster'}), // Event poster
+            poster: faker.image.urlLoremFlickr({category: 'poster'}), // Event poster
             date: faker.date.future(), // Random future date
             location: faker.location.city() + ', ' + faker.location.country(),
-            price: faker.number.float({ min: 20, max: 500, multipleOf: 0.01 }), // Base price
+            price: faker.number.float({min: 20, max: 500, multipleOf: 0.01}), // Base price
             cover: faker.image.urlLoremFlickr({category: 'concert'}), // Event cover image
             id: faker.string.alphanumeric(8), // Unique event ID
             category: eventType as EventType, // Random event category
             tickets: tickets, // Tickets array
             description: faker.lorem.paragraphs({min: 2, max: 8}),
+            createdAt: faker.date.recent(),
             venue: {
                 name: faker.word.noun(),
                 street: faker.location.streetAddress(),
@@ -43,7 +44,10 @@ export function generateEvents(count: number): EventModel[] {
                 saved: venueSaved,
                 id: venueSaved ? faker.string.alphanumeric(8) : undefined,
                 district: faker.location.state()
-            }
+            },
+            minAge: 18,
+            dress: 'Casual',
+
         };
 
         events.push(event);

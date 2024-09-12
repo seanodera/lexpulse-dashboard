@@ -39,6 +39,10 @@ export interface EventModel {
     category: EventType;
     tickets: Ticket[];
     discount?: Discount[];
+    createdAt: Date;
+    minAge: number;
+    dress: string;
+    lastEntry?: string;
     venue: {
         name: string;
         street: string;

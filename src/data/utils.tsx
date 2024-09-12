@@ -103,9 +103,11 @@ export function getColorPalette(colors: FinalColor[]): Palette {
 colors.forEach(color => {
     const category = categorizeColor(color);
     // Select the color for each category with the highest properties
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     if (!palette[category] || (category === 'vibrant' && color.saturation > (palette[category] as Color).saturation)) {
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         palette[category] = color;
     }
 });
