@@ -15,7 +15,6 @@ function App() {
     const [isDarkMode] = useState(false);
 
     const lightTheme = {
-
         token: {
             colorPrimary: primaryColor['500'],
             colorTextBase: '#000000',
@@ -28,8 +27,13 @@ function App() {
             },
             Menu: {
                 darkItemBg: darkColors.dark,
+            },
+            Select: {
+                clearBg: "rgba(255,255,255,0)",
+                selectorBg: "rgba(255,255,255,0)"
             }
         },
+
     };
 
     const darkTheme = {
