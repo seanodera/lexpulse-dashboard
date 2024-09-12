@@ -19,7 +19,7 @@ export default function EventComponent({event}: {event: EventModel}) {
                             },
                             {
                                 key: 1,
-                                label: 'edit',
+                                label: <Link to={`/manage-events/${event.id}/edit`} className={'text-current'}>edit</Link> ,
                             },
                             {
                                 key: 2,
