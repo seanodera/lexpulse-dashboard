@@ -1,14 +1,15 @@
 import {useEffect, useState} from 'react';
 import {Button, DatePicker, Input, Select, Switch, TimePicker, Upload} from 'antd';
-import {EventModel, EventType, Venue} from '../data/types';
+import {EventModel, EventType, Ticket, Venue} from '../data/types';
 import {RcFile} from 'antd/lib/upload';
 import {generateVenues} from "../data/generator.ts";
 import {faker} from "@faker-js/faker";
 import {format} from "date-fns";
 import {Textarea} from "@headlessui/react";
-import {Formik, Field, Form, ErrorMessage, FormikErrors} from 'formik';
+import {Formik, Field, Form, ErrorMessage, FormikErrors, FieldArray} from 'formik';
 import * as Yup from 'yup';
-import {FileImageOutlined} from "@ant-design/icons";
+import {FileImageOutlined, PlusOutlined} from "@ant-design/icons";
+import VenueWidget from "../components/venueWidget.tsx";
 
 const {Option} = Select;
 
@@ -216,47 +217,7 @@ const CreateEventScreen = () => {
                                     </div>
                                 </>
                             )}
-                            {currentVenue && !isNewVenue && <div className={'grid grid-cols-2 gap-8'}>
-                                <div className={'col-span-2'}>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Name</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.name}</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Street</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.street}</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue District</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.district}</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue City</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.city}</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Country</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.country}</h3>
-                                </div>
-
-
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Capacity</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.capacity} People</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Followers</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.followers}</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Email</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.email}</h3>
-                                </div>
-                                <div>
-                                    <h4 className={'text-gray-500 font-medium'}>Venue Phone</h4>
-                                    <h3 className={'font-semibold'}>{currentVenue.phone}</h3>
-                                </div>
-
-                            </div>}
+                            {currentVenue && !isNewVenue && <VenueWidget venue={currentVenue}/>}
                         </div>
                         <div className={'rounded-lg p-4 space-y-4'}>
                             <h3 className={'text-lg font-semibold'}>Event Dates</h3>
@@ -346,14 +307,74 @@ const CreateEventScreen = () => {
                     </div>
 
 
-                    <div className={'grid grid-cols-2 gap-8 p-4'}>
 
+                    {/* Tickets Section */}
+                    <div className={'bg-white p-4 space-y-4 my-8'}>
+                        <div className={'flex justify-between'}>
+                            <h1 className={'text-2xl'}>Tickets</h1>
+                            <Button type={'primary'} ghost onClick={() => {
+                                setFieldValue('tickets', [
+                                    ...values.tickets,
+                                    { id: Date.now().toString(), name: '', price: 0, stock: 0 },
+                                ]);
+                            }}>
+                                <PlusOutlined /> Add Ticket
+                            </Button>
+                        </div>
 
+                        <FieldArray name="tickets">
+                            {({ remove }) => (
+                                <div className={'grid grid-cols-3 gap-8'}>
+                                    {values.tickets.map((_ticket: Ticket, index: number) => (
+                                        <fieldset key={index} className={'space-y-2'}>
+                                            <div className={'flex items-center justify-between'}>
+                                                <h3 className={'font-semibold'}>Ticket {index + 1}</h3>
+                                                <Button danger onClick={() => remove(index)}>
+                                                    Remove Ticket
+                                                </Button>
+                                            </div>
+                                            <Field name={`tickets[${index}].name`}>
+                                                {({ field }: any) => (
+                                                    <div>
+                                                        <label className={'block font-semibold'}>Name</label>
+                                                        <input {...field} placeholder="Ticket Name" className={inputCls} />
+                                                    </div>
+                                                )}
+                                            </Field>
+                                            <Field name={`tickets[${index}].price`}>
+                                                {({ field }: any) => (
+                                                    <div>
+                                                        <label className={'block font-semibold'}>Price</label>
+                                                        <input {...field} type="number" placeholder="Price" className={inputCls} min={1} />
+                                                    </div>
+                                                )}
+                                            </Field>
+                                            <Field name={`tickets[${index}].stock`}>
+                                                {({ field }: any) => (
+                                                    <div>
+                                                        <label className={'block font-semibold'}>Stock</label>
+                                                        <input {...field} type="number" placeholder="Stock" className={inputCls} min={1} />
+                                                    </div>
+                                                )}
+                                            </Field>
+                                            <div>
+                                                <h3 className={'font-semibold'}>Sales End</h3>
+                                                <div className={'flex justify-between mb-1'}><h4 className={'text-sm'}>Global</h4> <Switch/></div>
+                                                <DatePicker format={'dddd MMM DD, YYYY'}
+                                                            className={inputCls}/>
+                                            </div>
+                                        </fieldset>
+                                    ))}
+                                </div>
+                            )}
+                        </FieldArray>
                     </div>
                 </Form>
             )}
         </Formik>
     );
 };
+
+
 
 export default CreateEventScreen;

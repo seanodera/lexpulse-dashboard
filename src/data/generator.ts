@@ -48,7 +48,8 @@ export function generateEvents(count: number): EventModel[] {
             minAge: 18,
             dress: 'Casual',
             startSalesDate: faker.date.recent(),
-            endSalesDate: faker.date.future()
+            endSalesDate: faker.date.future(),
+            eventEnd: ""
         };
 
         events.push(event);
