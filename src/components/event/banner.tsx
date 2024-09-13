@@ -26,38 +26,40 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
             <div className={'col-span-3'}>
                 <div className={'flex justify-between items-center w-full'}>
                     <h1 className={'text-3xl font-semibold capitalize'}>{event.name}</h1>
-                    <Link className={'block'} to={`/manage-events/${event.id}/edit`}><Dropdown.Button type={'primary'} menu={{
-                        items: [
-                            {
-                                key: 0,
-                                label: 'Share',
-                                icon: <ShareAltOutlined/>
-                            },
-                            {
-                                key: 1,
-                                label: 'GuestList',
-                                icon: <UserSwitchOutlined/>
-                            },
-                            {
-                                key: 2,
-                                label: 'Manage Scanners',
-                                icon: <SettingOutlined/>
-                            },
-                            {
-                                key: 3,
-                                label: 'Get Report',
-                                icon: <FileTextOutlined/>
-                            },
-                            {
-                                key: 4,
-                                label: 'Cancel Event',
-                                icon: <CloseCircleOutlined/>,
-                                danger: true,
-                            }
-                        ]
-                    }}>
-                   Edit Event
-                    </Dropdown.Button></Link>
+                    <div>
+                        <Dropdown.Button buttonsRender={([leftButton, rightButton]) => [<Link className={'block'} to={`/manage-events/${event.id}/edit`}>{leftButton}</Link>, rightButton]} type={'primary'} menu={{
+                            items: [
+                                {
+                                    key: 0,
+                                    label: 'Share',
+                                    icon: <ShareAltOutlined/>
+                                },
+                                {
+                                    key: 1,
+                                    label: 'GuestList',
+                                    icon: <UserSwitchOutlined/>
+                                },
+                                {
+                                    key: 2,
+                                    label: 'Manage Scanners',
+                                    icon: <SettingOutlined/>
+                                },
+                                {
+                                    key: 3,
+                                    label: 'Get Report',
+                                    icon: <FileTextOutlined/>
+                                },
+                                {
+                                    key: 4,
+                                    label: 'Cancel Event',
+                                    icon: <CloseCircleOutlined/>,
+                                    danger: true,
+                                }
+                            ]
+                        }}>
+                            Edit Event
+                        </Dropdown.Button>
+                    </div>
                 </div>
                 <div className={'grid grid-cols-3 gap-8'}>
                     <div className={'mt-3'}>

@@ -1,279 +1,307 @@
-import  { useState } from 'react';
-import {Formik, Field, Form, FieldArray, ErrorMessage} from 'formik';
-import {Button, DatePicker, Upload, message, Select, Input} from 'antd';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
+import {useEffect, useState} from 'react';
+import {Button, DatePicker, Input, Select, Switch, TimePicker, Upload} from 'antd';
+import {EventModel, EventType, Venue} from '../data/types';
+import {RcFile} from 'antd/lib/upload';
+import {generateVenues} from "../data/generator.ts";
+import {faker} from "@faker-js/faker";
+import {format} from "date-fns";
+import {Textarea} from "@headlessui/react";
+import {Formik, Field, Form, ErrorMessage, FormikErrors} from 'formik';
 import * as Yup from 'yup';
-import { EventType, Ticket, Venue } from '../data/types';
-import { RcFile } from 'antd/lib/upload';
+import {FileImageOutlined, UploadOutlined} from "@ant-design/icons";
 
-// List of event categories based on EventType
-const eventCategories = Object.keys(EventType);
-const { Option } = Select;
+const {Option} = Select;
 
 const CreateEventScreen = () => {
-    const inputCls = 'mt-1 block border-solid border-gray-500 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary w-full';
+    const inputCls = 'block border-solid border-gray-500 placeholder-gray-300 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary text-current w-full';
     const [isNewVenue, setIsNewVenue] = useState(false);
-    const savedVenues: Venue[] = [];
-    // const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [savedVenues, setSavedVenues] = useState<Venue[]>([]);
+    const [currentVenue, setCurrentVenue] = useState<Venue | undefined>();
+    const [immediate, setImmediate] = useState(true);
+    const [eventStart, setEventStart] = useState(true);
+    const [multiDay, setMultiDay] = useState(false);
 
-    // Validation schema using Yup
-    const validationSchema = Yup.object().shape({
-        name: Yup.string().required('Event Name is required'),
-        description: Yup.string().required('Description is required'),
-        date: Yup.date().required('Event Date is required').nullable(),
-        category: Yup.string().required('Category is required'),
-        tickets: Yup.array().of(
-            Yup.object().shape({
-                name: Yup.string().required('Ticket name is required'),
-                price: Yup.number().required('Ticket price is required').min(1, 'Price cannot be less than $1'),
-                stock: Yup.number().required('Stock is required').min(1, 'Stock cannot be less than 1'),
-            })
-        ),
+    useEffect(() => {
+        setSavedVenues(generateVenues(faker.number.int(40), {}));
+    }, []);
+
+    const EventSchema = Yup.object().shape({
+        name: Yup.string().required('Event name is required'),
+        poster: Yup.mixed().required('Event poster is required'),
+        date: Yup.date().required('Event date is required'),
+        category: Yup.string().required('Event type is required'),
+        description: Yup.string().required('Event description is required'),
+        minAge: Yup.number().min(0, 'Age cannot be negative').required('Minimum age is required'),
+        dress: Yup.string().required('Dress code is required'),
+        lastEntry: Yup.string().required('Last entry time is required'),
+        venue: Yup.object({
+            name: Yup.string().required('Venue name is required'),
+            street: Yup.string().required('Street is required'),
+            city: Yup.string().required('City is required'),
+            country: Yup.string().required('Country is required'),
+        }),
     });
 
-    // Form submit handler
-    const handleSubmit = (values: any) => {
-        console.log('Form values:', values);
-        message.success('Event created successfully!');
+    const initialValues: EventModel = {
+        name: '',
+        poster: '',
+        date: new Date(),
+        location: '',
+        price: 0,
+        cover: '',
+        id: '',
+        description: '',
+        category: EventType.Clubbing,
+        tickets: [],
+        createdAt: new Date(),
+        minAge: 18,
+        dress: '',
+        venue: {
+            name: '',
+            street: '',
+            city: '',
+            country: '',
+            district: '',
+            saved: false
+        },
+        startSalesDate: new Date(),
+        endSalesDate: new Date(),
+        eventEnd: '',
     };
 
-    // Image upload handler
-    const handleImageUpload = (file: RcFile, setFieldValue: any, fieldName: string) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            setFieldValue(fieldName, reader.result); // Set base64 encoded image to the form field
-        };
-        reader.readAsDataURL(file);
+    const handleImageUpload = (file: RcFile, setFieldValue: (field: string, value: string, shouldValidate?: boolean) => Promise<void | FormikErrors<EventModel>>, fieldName: string) => {
+        setFieldValue(fieldName, URL.createObjectURL(file));
         return false; // Prevent default upload action
     };
 
     return (
-        <div className="px-4 py-4">
-
-
-            <Formik
-                initialValues={{
-                    name: '',
-                    description: '',
-                    category: eventCategories[0],
-                    date: null,
-                    poster: '',
-                    cover: '',
-                    tickets: [],
-                }}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-            >
-                {({ values, setFieldValue }) => (
-                    <Form className="space-y-4">
-                        <div className={'flex justify-between items-center '}>
+        <Formik
+            initialValues={initialValues}
+            validationSchema={EventSchema}
+            onSubmit={(values) => {
+                console.log('Form values:', values);
+            }}
+        >
+            {({setFieldValue, values}) => (
+                <Form>
+                    <div className={'bg-cover bg-center bg-no-repeat shadow'} style={{
+                        backgroundImage: `url("${values.cover}")`
+                    }}>
+                        <div className={'py-8 px-16 backdrop-blur-sm bg-dark bg-opacity-60 text-white w-full'}>
                             <div className={'flex justify-between items-center w-full'}>
-                                <h2 className="text-2xl font-semibold mb-4">Create New Event</h2>
+                                <div className={'max-w-xl'}>
+                                    <h4 className={'text-gray-300 font-medium'}>Event Name</h4>
+                                    <Field name="name" as={Input} className={inputCls} placeholder="Event Name"/>
+                                    <ErrorMessage name="name" component="div" className="text-red-500"/>
+                                </div>
                                 <div className={'flex gap-2'}>
-                                    <Button type={'primary'}>Preview</Button>
-                                    <Button type="primary" htmlType="submit">
-                                        Create Event
-                                    </Button>
+                                    <Upload
+                                        showUploadList={false}
+                                        beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'cover')}
+                                    >
+                                        <Button type={'default'} ghost>Change Cover</Button>
+                                    </Upload>
+                                    <Button type={'primary'} htmlType="submit">Save Changes</Button>
                                 </div>
                             </div>
                         </div>
-                        <div className={'grid grid-cols-3 gap-8'}>
+                    </div>
+
+                    <div className={'grid grid-cols-3 gap-8'}>
+                        <div className={'rounded-lg aspect-square p-4'}>
+                            <h3 className={'font-semibold text-lg'}>Poster Image</h3>
+                            <Upload
+                                beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'poster')}
+                                showUploadList={false}
+                                className={'w-full'}
+                                itemRender={(_originNode, file) => {
+                                    return <img src={URL.createObjectURL(file.originFileObj as File)}
+                                                className={'w-full aspect-square rounded-lg'} alt={''}/>
+                                }}
+                                style={{
+                                    width: '100% !important'
+                                }}
+                            >
+                                {values.poster ? (
+                                    <img src={values.poster} alt="poster" className="w-full aspect-square rounded-xl"/>
+                                ) : (
+                                    <div className={'border border-dashed border-primary rounded-lg aspect-square w-ful flex flex-col justify-center items-center p-16'}>
+
+                                        <div className={'text-primary text-center'}>
+                                            <FileImageOutlined/>
+                                            <h3>Select A Poster (1:1)</h3>
+                                        </div>
+                                    </div>
+                                )}
+                            </Upload>
+                        </div>
+                        <div className={'rounded-lg aspect-square p-4 space-y-4'}>
+                            <h3 className={'text-lg font-semibold'}>Event Dates</h3>
                             <div>
-                                <h3 className={'font-semibold text-lg'}>Poster Image</h3>
-                                <Upload
-                                    beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'poster')}
-                                    showUploadList={false}
-                                    itemRender={(_originNode, file) => {
-                                        return <img src={URL.createObjectURL(file.originFileObj as File)} className={'w-full aspect-[0.5] rounded-lg'} alt={''}/>
-                                    }}
-                                >
-                                    {values.poster ? (
-                                        <img src={values.poster} alt="poster" className="w-full aspect-square rounded-xl" />
-                                    ) : (
-                                        <Button icon={<UploadOutlined />}>Upload Poster</Button>
-                                    )}
-                                </Upload>
+                                <h4 className={'text-gray-500 font-medium'}>Event Start Date</h4>
+                                <DatePicker
+                                    format={'dddd MMM DD, YYYY'}
+                                    className={inputCls}
+                                    onChange={(value) => setFieldValue('date', new Date(value.toString()))}
+                                />
+                                <ErrorMessage name="date" component="div" className="text-red-500"/>
                             </div>
-                            <div className={'col-span-2 px-4'}>
-                                <h4 className={'font-semibold text-lg'}>Cover Image</h4>
-                                <Upload
-                                    beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'cover')}
-                                    showUploadList={false}
-                                    rootClassName={'w-full'}
-                                    itemRender={(_originNode, file) => {
-                                        return <img src={URL.createObjectURL(file.originFileObj as File)} className={'w-full aspect-[0.5] rounded-lg'} alt={''}/>
-                                    }}
-                                >
-                                    {values.cover ? (
-                                        <img src={values.cover} alt="cover" className="w-full aspect-[2] rounded-xl" />
-                                    ) : (
-                                        <Button icon={<UploadOutlined />}>Upload Cover</Button>
-                                    )}
-                                </Upload>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Event Last Entry</h4>
+                                <TimePicker
+                                    format={'HH:mm'}
+                                    className={inputCls}
+                                    onChange={(value) => setFieldValue('lastEntry', format(value.toString(), 'HH:mm'))}
+                                />
+                                <ErrorMessage name="lastEntry" component="div" className="text-red-500"/>
+                            </div>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Event End Date</h4>
+                                <div className={'flex justify-between mb-1'}>
+                                    <h4 className={'text-sm'}>MultiDay</h4>
+                                    <Switch value={multiDay} onChange={(value) => setMultiDay(value)}/>
+                                </div>
+                                {multiDay ? <DatePicker format={'dddd MMM DD, YYYY'}  className={inputCls}
+                                                        onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/> :<TimePicker format={'HH:mm'} className={inputCls}
+                                             onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/>}
+                            </div>
+                        </div>
+                        <div className={'rounded-lg aspect-square space-y-4 p-4'}>
+                            <h3 className={'text-lg font-semibold'}>Ticket Sales</h3>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Sale Start</h4>
+                                <div className={'flex justify-between my-1'}>
+                                    <h4 className={'text-sm'}>Start Immediately</h4>
+                                    <Switch value={immediate} onChange={(value) => setImmediate(value)}/>
+                                </div>
+                                <DatePicker
+                                    disabled={immediate}
+                                    format={'dddd MMM DD, YYYY'}
+                                    className={inputCls}
+                                    onChange={(value) => setFieldValue('startSalesDate', new Date(value.toString()))}
+                                />
+                            </div>
+                            <div className={''}>
+                                <h4 className={'text-gray-500 font-medium'}>End Ticket Sales</h4>
+                                <div className={'flex justify-between my-1'}><h4 className={'text-sm'}>When Event
+                                    starts</h4> <Switch
+                                    value={eventStart} onChange={(value) => setEventStart(value)}/></div>
+                                <DatePicker
+                                    disabled={eventStart}
+                                    format={'dddd MMM DD, YYYY'}
+                                    className={inputCls}
+                                    onChange={(value) => setFieldValue('endTicketSales', new Date(value.toString()))}
+                                />
+                                <ErrorMessage name="endTicketSales" component="div" className="text-red-500"/>
                             </div>
                         </div>
 
-                        <fieldset className={'grid grid-cols-2 gap-8'}>
-                            <div className={'bg-white rounded-xl p-4 space-y-4'}>
-                                <h1 className={'text-2xl'}>Event Details</h1>
+                        <div className={'rounded-lg aspect-square space-y-4 p-4'}>
 
-                                {/* Event Name */}
-                                <Field name="name">
-                                    {({ field }: any) => (
-                                        <div>
-                                            <label htmlFor="name" className={'block font-semibold'}>Event Name</label>
-                                            <input {...field} placeholder="Enter Event Name" className={inputCls} />
-                                        </div>
-                                    )}
-                                </Field>
-
-                                {/* Event Description */}
-                                <Field name="description">
-                                    {({ field }: any) => (
-                                        <div>
-                                            <label htmlFor="description" className={'block font-semibold'}>Description</label>
-                                            <textarea {...field} rows={4} placeholder="Enter Event Description" className={inputCls} />
-                                        </div>
-                                    )}
-                                </Field>
-
-                                {/* Event Category */}
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Event Type</h4>
                                 <Field name="category" as="select" className={inputCls}>
-                                    {eventCategories.map((category: string) => (
+                                    {Object.keys(EventType).map((category: string) => (
                                         <option key={category} value={category}>
                                             {category}
                                         </option>
                                     ))}
                                 </Field>
-
-                                {/* Event Date */}
-                                <Field name="date">
-                                    {({ field, form }: any) => (
-                                        <div>
-                                            <label htmlFor="date">Event Date</label>
-                                            <DatePicker
-                                                showTime
-                                                format="YYYY-MM-DD HH:mm"
-                                                onChange={(date) => form.setFieldValue(field.name, date)}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    )}
-                                </Field>
+                                <ErrorMessage name="category" component="div" className="text-red-500"/>
                             </div>
-                            <div className={'bg-white rounded-xl p-4 space-y-4'}>
-                                {/* Venue Selection */}
-                                <div>
-                                    <label className={'block font-semibold'} htmlFor="venue">Venue</label>
-                                    <Select
-                                        onChange={(value) => {
-                                            if (value === 'new') {
-                                                setIsNewVenue(true);
-                                            } else {
-                                                setIsNewVenue(false);
-                                                const selectedVenue = savedVenues.find((v) => v.id === value);
-                                                setFieldValue('venue', { ...selectedVenue, saved: true });
-                                            }
-                                        }}
-                                        placeholder="Select Venue or Add New"
-                                    >
-                                        {savedVenues.map((venue) => (
-                                            <Option key={venue.id} value={venue.id}>
-                                                {venue.name} - {venue.city}, {venue.country}
-                                            </Option>
-                                        ))}
-                                        <Option value="new">Add New Venue</Option>
-                                    </Select>
-                                </div>
-
-                                {isNewVenue && (
-                                    <>
-                                        <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.name">Venue Name</label>
-                                            <Field className={inputCls} name="venue.name" as={Input} placeholder="Enter Venue Name" />
-                                            <ErrorMessage name="venue.name" component="div" className="text-red-500" />
-                                        </div>
-                                        <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.street">Street</label>
-                                            <Field className={inputCls} name="venue.street" as={Input} placeholder="Enter Street" />
-                                            <ErrorMessage name="venue.street" component="div" className="text-red-500" />
-                                        </div>
-                                        <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.city">City</label>
-                                            <Field className={inputCls} name="venue.city" as={Input} placeholder="Enter City" />
-                                            <ErrorMessage name="venue.city" component="div" className="text-red-500" />
-                                        </div>
-                                        <div>
-                                            <label className={'block font-semibold'} htmlFor="venue.country">Country</label>
-                                            <Field className={inputCls} name="venue.country" as={Input} placeholder="Enter Country" />
-                                            <ErrorMessage name="venue.country" component="div" className="text-red-500" />
-                                        </div>
-                                    </>
-                                )}
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Minimum Age</h4>
+                                <Field name="minAge" type="number" as={Input} className={inputCls} min={0}/>
+                                <ErrorMessage name="minAge" component="div" className="text-red-500"/>
                             </div>
-                        </fieldset>
-
-
-                        {/* Tickets Section */}
-                        <div className={'bg-white rounded-xl p-4 space-y-4'}>
-                            <div className={'flex justify-between'}>
-                                <h1 className={'text-2xl'}>Tickets</h1>
-                                <Button type={'primary'} onClick={() => {
-                                    setFieldValue('tickets', [
-                                        ...values.tickets,
-                                        { id: Date.now().toString(), name: '', price: 0, stock: 0 },
-                                    ]);
-                                }}>
-                                    <PlusOutlined /> Add Ticket
-                                </Button>
+                            <div>
+                                <h4 className={'text-gray-500 font-medium'}>Dress Code</h4>
+                                <Field name="dress" as={Input} className={inputCls} placeholder="Casual"/>
+                                <ErrorMessage name="dress" component="div" className="text-red-500"/>
                             </div>
-
-                            <FieldArray name="tickets">
-                                {({ remove }) => (
-                                    <div className={'grid grid-cols-3 gap-8'}>
-                                        {values.tickets.map((_ticket: Ticket, index: number) => (
-                                            <fieldset key={index} className={'space-y-2'}>
-                                                <div className={'flex items-center justify-between'}>
-                                                    <h3 className={'font-semibold'}>Ticket {index + 1}</h3>
-                                                    <Button danger onClick={() => remove(index)}>
-                                                        Remove Ticket
-                                                    </Button>
-                                                </div>
-                                                <Field name={`tickets[${index}].name`}>
-                                                    {({ field }: any) => (
-                                                        <div>
-                                                            <label className={'block font-semibold'}>Name</label>
-                                                            <input {...field} placeholder="Ticket Name" className={inputCls} />
-                                                        </div>
-                                                    )}
-                                                </Field>
-                                                <Field name={`tickets[${index}].price`}>
-                                                    {({ field }: any) => (
-                                                        <div>
-                                                            <label className={'block font-semibold'}>Price</label>
-                                                            <input {...field} type="number" placeholder="Price" className={inputCls} min={1} />
-                                                        </div>
-                                                    )}
-                                                </Field>
-                                                <Field name={`tickets[${index}].stock`}>
-                                                    {({ field }: any) => (
-                                                        <div>
-                                                            <label className={'block font-semibold'}>Stock</label>
-                                                            <input {...field} type="number" placeholder="Stock" className={inputCls} min={1} />
-                                                        </div>
-                                                    )}
-                                                </Field>
-                                            </fieldset>
-                                        ))}
-                                    </div>
-                                )}
-                            </FieldArray>
                         </div>
-                    </Form>
 
-                )}
-            </Formik>
-        </div>
+                    </div>
+
+
+                    <div className={'grid grid-cols-2 gap-8 p-4'}>
+
+
+                        <div className={'bg-white rounded-lg p-4'}>
+                            <h2 className={'text-xl font-semibold mb-2'}>Description</h2>
+                            <Field name="description" as={Textarea} className={inputCls + ' h-[calc(100%-46px)]'}/>
+                            <ErrorMessage name="description" component="div" className="text-red-500"/>
+                        </div>
+
+                        <div className={'bg-white rounded-xl p-4 space-y-4'}>
+                            <h2 className={'text-xl font-semibold'}>Venue</h2>
+                            <Select
+                                defaultValue={currentVenue?.id}
+                                onChange={(value) => {
+                                    if (value === 'new') {
+                                        setIsNewVenue(true);
+                                        setCurrentVenue(undefined);
+                                        setFieldValue('venue', {
+                                            name: '',
+                                            street: '',
+                                            city: '',
+                                            country: '',
+                                            district: '',
+                                            saved: false
+                                        });
+                                    } else {
+                                        setIsNewVenue(false);
+                                        const selectedVenue = savedVenues.find((v) => v.id === value);
+                                        if (selectedVenue) {
+                                            setCurrentVenue(selectedVenue);
+                                            setFieldValue('venue', selectedVenue);
+                                        }
+                                    }
+                                }}
+                                className={'w-full'}
+                                placeholder="Select Venue or Add New"
+                                size={'large'}
+                            >
+                                {savedVenues.map((venue) => (
+                                    <Option key={venue.id} value={venue.id}>
+                                        {venue.name} - {venue.city}, {venue.country}
+                                    </Option>
+                                ))}
+                                <Option value="new">Add New Venue</Option>
+                            </Select>
+
+                            {isNewVenue && (
+                                <>
+                                    <div>
+                                        <label className={'block font-semibold'} htmlFor="venue.name">Venue Name</label>
+                                        <Field name="venue.name" as={Input} className={inputCls}
+                                               placeholder="Enter Venue Name"/>
+                                        <ErrorMessage name="venue.name" component="div" className="text-red-500"/>
+                                    </div>
+                                    <div>
+                                        <label className={'block font-semibold'} htmlFor="venue.street">Street</label>
+                                        <Field name="venue.street" as={Input} className={inputCls}
+                                               placeholder="Street"/>
+                                        <ErrorMessage name="venue.street" component="div" className="text-red-500"/>
+                                    </div>
+                                    <div>
+                                        <label className={'block font-semibold'} htmlFor="venue.city">City</label>
+                                        <Field name="venue.city" as={Input} className={inputCls} placeholder="City"/>
+                                        <ErrorMessage name="venue.city" component="div" className="text-red-500"/>
+                                    </div>
+                                    <div>
+                                        <label className={'block font-semibold'} htmlFor="venue.country">Country</label>
+                                        <Field name="venue.country" as={Input} className={inputCls}
+                                               placeholder="Country"/>
+                                        <ErrorMessage name="venue.country" component="div" className="text-red-500"/>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </Form>
+            )}
+        </Formik>
     );
 };
 

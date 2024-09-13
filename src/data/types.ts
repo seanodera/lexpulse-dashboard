@@ -40,6 +40,9 @@ export interface EventModel {
     tickets: Ticket[];
     discount?: Discount[];
     createdAt: Date;
+    startSalesDate: Date;
+    endSalesDate: Date;
+    eventEnd:string;
     minAge: number;
     dress: string;
     lastEntry?: string;
