@@ -8,7 +8,7 @@ import {format} from "date-fns";
 import {Textarea} from "@headlessui/react";
 import {Formik, Field, Form, ErrorMessage, FormikErrors} from 'formik';
 import * as Yup from 'yup';
-import {FileImageOutlined, UploadOutlined} from "@ant-design/icons";
+import {FileImageOutlined} from "@ant-design/icons";
 
 const {Option} = Select;
 
@@ -108,34 +108,157 @@ const CreateEventScreen = () => {
                     </div>
 
                     <div className={'grid grid-cols-3 gap-8'}>
-                        <div className={'rounded-lg aspect-square p-4'}>
+                        <div className={'rounded-lg p-4'}>
                             <h3 className={'font-semibold text-lg'}>Poster Image</h3>
-                            <Upload
-                                beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'poster')}
-                                showUploadList={false}
-                                className={'w-full'}
-                                itemRender={(_originNode, file) => {
-                                    return <img src={URL.createObjectURL(file.originFileObj as File)}
-                                                className={'w-full aspect-square rounded-lg'} alt={''}/>
-                                }}
-                                style={{
-                                    width: '100% !important'
-                                }}
-                            >
-                                {values.poster ? (
-                                    <img src={values.poster} alt="poster" className="w-full aspect-square rounded-xl"/>
-                                ) : (
-                                    <div className={'border border-dashed border-primary rounded-lg aspect-square w-ful flex flex-col justify-center items-center p-16'}>
+                            <div className={'max-w-sm'}>
+                                <Upload
+                                    beforeUpload={(file) => handleImageUpload(file, setFieldValue, 'poster')}
+                                    showUploadList={false}
+                                    className={'w-full'}
+                                    itemRender={(_originNode, file) => {
+                                        return <img src={URL.createObjectURL(file.originFileObj as File)}
+                                                    className={'w-full aspect-square rounded-lg'} alt={''}/>
+                                    }}
+                                >
+                                    {values.poster ? (
+                                        <img src={values.poster} alt="poster"
+                                             className="w-full aspect-square rounded-xl"/>
+                                    ) : (
+                                        <div
+                                            className={'border border-dashed border-primary rounded-lg aspect-square w-full flex flex-col justify-center items-center p-16'}>
 
-                                        <div className={'text-primary text-center'}>
-                                            <FileImageOutlined/>
-                                            <h3>Select A Poster (1:1)</h3>
+                                            <div className={'text-primary text-center'}>
+                                                <FileImageOutlined/>
+                                                <h3>Select A Poster (1:1)</h3>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </Upload>
+                                    )}
+                                </Upload>
+                            </div>
                         </div>
-                        <div className={'rounded-lg aspect-square p-4 space-y-4'}>
+                        <div className={'rounded-lg p-4'}>
+                            <h2 className={'text-xl font-semibold mb-2'}>Description</h2>
+                            <Field name="description" as={Textarea} className={inputCls + ' h-[calc(100%-46px)]'}/>
+                            <ErrorMessage name="description" component="div" className="text-red-500"/>
+                        </div>
+                        <div className={'rounded-xl p-4 space-y-4'}>
+                            <h2 className={'text-xl font-semibold'}>Venue</h2>
+                            <Select
+                                defaultValue={currentVenue?.id}
+                                onChange={(value) => {
+                                    if (value === 'new') {
+                                        setIsNewVenue(true);
+                                        setCurrentVenue(undefined);
+                                        setFieldValue('venue', {
+                                            name: '',
+                                            street: '',
+                                            city: '',
+                                            country: '',
+                                            district: '',
+                                            saved: false
+                                        });
+                                    } else {
+                                        setIsNewVenue(false);
+                                        const selectedVenue = savedVenues.find((v) => v.id === value);
+                                        if (selectedVenue) {
+                                            setCurrentVenue(selectedVenue);
+                                            setFieldValue('venue', {
+                                                name: selectedVenue.name,
+                                                street: selectedVenue.street,
+                                                city: selectedVenue.city,
+                                                country: selectedVenue.country,
+                                                district: selectedVenue.district,
+                                                saved: true,
+                                                id: selectedVenue.id,
+                                            });
+                                        }
+                                    }
+                                }}
+                                className={'w-full'}
+                                placeholder="Select Venue or Add New"
+                                size={'large'}
+                            >
+                                {savedVenues.map((venue) => (
+                                    <Option key={venue.id} value={venue.id}>
+                                        {venue.name} - {venue.city}, {venue.country}
+                                    </Option>
+                                ))}
+                                <Option value="new">Add New Venue</Option>
+                            </Select>
+
+                            {isNewVenue && (
+                                <>
+                                    <div>
+                                        <label className={'text-gray-500 font-medium'} htmlFor="venue.name">Venue
+                                            Name</label>
+                                        <Field name="venue.name" as={Input} className={inputCls}
+                                               placeholder="Enter Venue Name"/>
+                                        <ErrorMessage name="venue.name" component="div" className="text-red-500"/>
+                                    </div>
+                                    <div>
+                                        <label className={'text-gray-500 font-medium'}
+                                               htmlFor="venue.street">Street</label>
+                                        <Field name="venue.street" as={Input} className={inputCls}
+                                               placeholder="Street"/>
+                                        <ErrorMessage name="venue.street" component="div" className="text-red-500"/>
+                                    </div>
+                                    <div>
+                                        <label className={'text-gray-500 font-medium'} htmlFor="venue.city">City</label>
+                                        <Field name="venue.city" as={Input} className={inputCls} placeholder="City"/>
+                                        <ErrorMessage name="venue.city" component="div" className="text-red-500"/>
+                                    </div>
+                                    <div>
+                                        <label className={'text-gray-500 font-medium'}
+                                               htmlFor="venue.country">Country</label>
+                                        <Field name="venue.country" as={Input} className={inputCls}
+                                               placeholder="Country"/>
+                                        <ErrorMessage name="venue.country" component="div" className="text-red-500"/>
+                                    </div>
+                                </>
+                            )}
+                            {currentVenue && !isNewVenue && <div className={'grid grid-cols-2 gap-8'}>
+                                <div className={'col-span-2'}>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Name</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.name}</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Street</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.street}</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue District</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.district}</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue City</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.city}</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Country</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.country}</h3>
+                                </div>
+
+
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Capacity</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.capacity} People</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Followers</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.followers}</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Email</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.email}</h3>
+                                </div>
+                                <div>
+                                    <h4 className={'text-gray-500 font-medium'}>Venue Phone</h4>
+                                    <h3 className={'font-semibold'}>{currentVenue.phone}</h3>
+                                </div>
+
+                            </div>}
+                        </div>
+                        <div className={'rounded-lg p-4 space-y-4'}>
                             <h3 className={'text-lg font-semibold'}>Event Dates</h3>
                             <div>
                                 <h4 className={'text-gray-500 font-medium'}>Event Start Date</h4>
@@ -161,12 +284,13 @@ const CreateEventScreen = () => {
                                     <h4 className={'text-sm'}>MultiDay</h4>
                                     <Switch value={multiDay} onChange={(value) => setMultiDay(value)}/>
                                 </div>
-                                {multiDay ? <DatePicker format={'dddd MMM DD, YYYY'}  className={inputCls}
-                                                        onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/> :<TimePicker format={'HH:mm'} className={inputCls}
-                                             onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/>}
+                                {multiDay ? <DatePicker format={'dddd MMM DD, YYYY'} className={inputCls}
+                                                        onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/> :
+                                    <TimePicker format={'HH:mm'} className={inputCls}
+                                                onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/>}
                             </div>
                         </div>
-                        <div className={'rounded-lg aspect-square space-y-4 p-4'}>
+                        <div className={'rounded-lg space-y-4 p-4'}>
                             <h3 className={'text-lg font-semibold'}>Ticket Sales</h3>
                             <div>
                                 <h4 className={'text-gray-500 font-medium'}>Sale Start</h4>
@@ -195,9 +319,8 @@ const CreateEventScreen = () => {
                                 <ErrorMessage name="endTicketSales" component="div" className="text-red-500"/>
                             </div>
                         </div>
-
-                        <div className={'rounded-lg aspect-square space-y-4 p-4'}>
-
+                        <div className={'rounded-lg space-y-4 p-4'}>
+                            <h3 className={'text-lg font-semibold'}>Event Details</h3>
                             <div>
                                 <h4 className={'text-gray-500 font-medium'}>Event Type</h4>
                                 <Field name="category" as="select" className={inputCls}>
@@ -220,84 +343,12 @@ const CreateEventScreen = () => {
                                 <ErrorMessage name="dress" component="div" className="text-red-500"/>
                             </div>
                         </div>
-
                     </div>
 
 
                     <div className={'grid grid-cols-2 gap-8 p-4'}>
 
 
-                        <div className={'bg-white rounded-lg p-4'}>
-                            <h2 className={'text-xl font-semibold mb-2'}>Description</h2>
-                            <Field name="description" as={Textarea} className={inputCls + ' h-[calc(100%-46px)]'}/>
-                            <ErrorMessage name="description" component="div" className="text-red-500"/>
-                        </div>
-
-                        <div className={'bg-white rounded-xl p-4 space-y-4'}>
-                            <h2 className={'text-xl font-semibold'}>Venue</h2>
-                            <Select
-                                defaultValue={currentVenue?.id}
-                                onChange={(value) => {
-                                    if (value === 'new') {
-                                        setIsNewVenue(true);
-                                        setCurrentVenue(undefined);
-                                        setFieldValue('venue', {
-                                            name: '',
-                                            street: '',
-                                            city: '',
-                                            country: '',
-                                            district: '',
-                                            saved: false
-                                        });
-                                    } else {
-                                        setIsNewVenue(false);
-                                        const selectedVenue = savedVenues.find((v) => v.id === value);
-                                        if (selectedVenue) {
-                                            setCurrentVenue(selectedVenue);
-                                            setFieldValue('venue', selectedVenue);
-                                        }
-                                    }
-                                }}
-                                className={'w-full'}
-                                placeholder="Select Venue or Add New"
-                                size={'large'}
-                            >
-                                {savedVenues.map((venue) => (
-                                    <Option key={venue.id} value={venue.id}>
-                                        {venue.name} - {venue.city}, {venue.country}
-                                    </Option>
-                                ))}
-                                <Option value="new">Add New Venue</Option>
-                            </Select>
-
-                            {isNewVenue && (
-                                <>
-                                    <div>
-                                        <label className={'block font-semibold'} htmlFor="venue.name">Venue Name</label>
-                                        <Field name="venue.name" as={Input} className={inputCls}
-                                               placeholder="Enter Venue Name"/>
-                                        <ErrorMessage name="venue.name" component="div" className="text-red-500"/>
-                                    </div>
-                                    <div>
-                                        <label className={'block font-semibold'} htmlFor="venue.street">Street</label>
-                                        <Field name="venue.street" as={Input} className={inputCls}
-                                               placeholder="Street"/>
-                                        <ErrorMessage name="venue.street" component="div" className="text-red-500"/>
-                                    </div>
-                                    <div>
-                                        <label className={'block font-semibold'} htmlFor="venue.city">City</label>
-                                        <Field name="venue.city" as={Input} className={inputCls} placeholder="City"/>
-                                        <ErrorMessage name="venue.city" component="div" className="text-red-500"/>
-                                    </div>
-                                    <div>
-                                        <label className={'block font-semibold'} htmlFor="venue.country">Country</label>
-                                        <Field name="venue.country" as={Input} className={inputCls}
-                                               placeholder="Country"/>
-                                        <ErrorMessage name="venue.country" component="div" className="text-red-500"/>
-                                    </div>
-                                </>
-                            )}
-                        </div>
                     </div>
                 </Form>
             )}
