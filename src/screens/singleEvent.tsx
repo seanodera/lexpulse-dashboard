@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {EventModel, Ticket, Venue} from "../data/types.ts";
-import {generateEvents, generateVenues} from "../data/generator.ts";
+import {generateVenues} from "../data/generator.ts";
 import SingleEventBanner from "../components/event/banner.tsx";
 import {useParams} from "react-router-dom";
 import {Button, Card, Tabs, Typography} from "antd";
@@ -8,20 +8,25 @@ import {Doughnut} from "react-chartjs-2";
 import {ArcElement, Chart, Legend, Tooltip} from "chart.js";
 import TicketTab from "../components/event/tickets.tsx";
 import {contrastRatio, extractImageColors} from "../data/palette.ts";
+import {useAppDispatch, useAppSelector} from "../hooks/hooks.ts";
+import {selectFocusEvent, setFocusEvent} from "../data/slices/EventSlice.ts";
 
 
 Chart.register(ArcElement, Tooltip, Legend);
 
 export default function SingleEventScreen() {
     const {id} = useParams();
-    const [event, setEvent] = useState<EventModel>();
+    const event = useAppSelector(selectFocusEvent);
+    const dispatch = useAppDispatch();
     useEffect(() => {
-        const _event = generateEvents(1)[ 0 ];
+
         if (id) {
-            _event.id = id;
+            dispatch(setFocusEvent(id))
         }
-        setEvent(_event)
+
     }, [id])
+
+    console.log(event)
     if (!event) {
         return <div></div>
     }

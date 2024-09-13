@@ -3,15 +3,17 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Home from "./screens/home.tsx";
 import MainShell from "./shells/mainShell.tsx";
 import {ConfigProvider} from "antd";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {darkColors, primaryColor} from "../colors.ts";
 import CreateEventScreen from "./screens/createEvent.tsx";
 import ManageEvent from "./screens/manageEvent.tsx";
 import SingleEventScreen from "./screens/singleEvent.tsx";
 import EditEventScreen from "./screens/editEvent.tsx";
+import {fetchEvents} from "./data/slices/EventSlice.ts";
+import {useAppDispatch} from "./hooks/hooks.ts";
 
 function App() {
-
+    const dispatch = useAppDispatch();
     const [isDarkMode] = useState(false);
 
     const lightTheme = {
@@ -50,6 +52,11 @@ function App() {
             }
         },
     };
+
+    useEffect(() => {
+        dispatch(fetchEvents());
+    },[])
+
 
     return (
    <ConfigProvider theme={isDarkMode ? darkTheme : lightTheme}>

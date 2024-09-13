@@ -31,13 +31,13 @@ export default function EventComponent({event}: {event: EventModel}) {
                                 danger: true,
                             }
                         ]}}>
-                        <Button type={'primary'} icon={<EllipsisOutlined/>}/>
+                        <Button onClick={(e) => e.preventDefault()} type={'primary'} icon={<EllipsisOutlined/>}/>
                     </Dropdown>
                 </div>
             </div>
             <div>
                 <h2 className={'font-semibold text-xl capitalize'}>{event.name}</h2>
-                <Tag color={'purple'}>{event.category}</Tag>
+                <Tag color={'processing'}>{event.category}</Tag>
                 <p className={'line-clamp-2'}>{event.description}</p>
                 <Button type={'primary'}>View</Button>
             </div>

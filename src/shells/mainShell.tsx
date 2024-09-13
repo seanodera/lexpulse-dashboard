@@ -7,6 +7,7 @@ import Navbar from "../components/navigation/navbar.tsx";
 const {Content} = Layout;
 export default function MainShell() {
 
+
     return <Layout hasSider>
         <Sidebar/>
         <Layout className={'h-screen'}>

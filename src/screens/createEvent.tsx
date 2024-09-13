@@ -10,6 +10,9 @@ import {Formik, Field, Form, ErrorMessage, FormikErrors, FieldArray} from 'formi
 import * as Yup from 'yup';
 import {FileImageOutlined, PlusOutlined} from "@ant-design/icons";
 import VenueWidget from "../components/venueWidget.tsx";
+import {useAppDispatch} from "../hooks/hooks.ts";
+import {createEvent} from "../data/slices/EventSlice.ts";
+
 
 const {Option} = Select;
 
@@ -21,7 +24,7 @@ const CreateEventScreen = () => {
     const [immediate, setImmediate] = useState(true);
     const [eventStart, setEventStart] = useState(true);
     const [multiDay, setMultiDay] = useState(false);
-
+    const dispatch = useAppDispatch();
     useEffect(() => {
         setSavedVenues(generateVenues(faker.number.int(40), {}));
     }, []);
@@ -79,8 +82,9 @@ const CreateEventScreen = () => {
         <Formik
             initialValues={initialValues}
             validationSchema={EventSchema}
-            onSubmit={(values) => {
-                console.log('Form values:', values);
+            onSubmit={(values: EventModel) => {
+                console.log(values);
+                dispatch(createEvent(values));
             }}
         >
             {({setFieldValue, values}) => (
