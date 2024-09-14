@@ -2,7 +2,7 @@ import axios from "axios";
 import { countries } from "country-data";
 
 export const common = {
-    baseUrl: 'https://api-staging.lexpulse.app/',
+    baseUrl: import.meta.env.VITE_API_HOST_URL,
 }
 
 export function getRandomInt(max: number, min: number = 0): number {

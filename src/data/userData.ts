@@ -30,7 +30,7 @@ export async function signUpHost({ firstName, lastName, email, pass }: { firstNa
 
     let successObj: SuccessObj | undefined;
 
-    const res = await axios.post(`${common.baseUrl}api/v1/users`, formData, config).catch((e) => {
+    const res = await axios.post(`${common.baseUrl}/api/v1/users`, formData, config).catch((e) => {
         successObj = {
             success: false,
             status: e.response.status,
@@ -60,7 +60,7 @@ export async function SignInHost(email: string, pass: string): Promise<SuccessOb
 
     let successObj: SuccessObj | undefined;
 
-    const res = await axios.post(`${common.baseUrl}api/v1/auth`, raw, config).catch((e) => {
+    const res = await axios.post(`${common.baseUrl}/api/v1/auth`, raw, config).catch((e) => {
         successObj = {
             success: false,
             status: e.response.status,
@@ -90,7 +90,7 @@ export async function getUserApi(id: string): Promise<any | undefined> {
             },
         }
 
-        const res = await axios.get(`${common.baseUrl}api/v1/users/${id}`, config);
+        const res = await axios.get(`${common.baseUrl}/api/v1/users/${id}`, config);
         console.log(res);
         return res.data.data.user;
 
