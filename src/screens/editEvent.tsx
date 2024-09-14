@@ -22,7 +22,7 @@ export default function EditEventScreen() {
     useEffect(() => {
         const _event = generateEvents(1)[ 0 ];
         if (id) {
-            _event.id = id;
+            _event._id = id;
         }
         setEvent(_event)
         if (_event.venue.id) {
@@ -64,7 +64,7 @@ export default function EditEventScreen() {
                 <div className={'flex justify-between items-center w-full'}>
                     <div className={'max-w-xl'}>
                         <h4 className={'text-gray-300 font-medium'}>Event Name</h4>
-                        <Input className={inputCls} defaultValue={event.name}/>
+                        <Input className={inputCls} defaultValue={event.eventName}/>
                     </div>
                     <div className={'flex gap-2'}>
                         <Upload showUploadList={false}

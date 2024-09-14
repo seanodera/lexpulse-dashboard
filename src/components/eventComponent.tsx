@@ -7,7 +7,7 @@ import {Link} from "react-router-dom";
 export default function EventComponent({event}: {event: EventModel}) {
 
     return (
-        <Link className={'block text-current hover:text-current'} to={`/manage-events/${event.id}`}>
+        <Link className={'block text-current hover:text-current'} to={`/manage-events/${event._id}`}>
             <div className={'relative'}>
                 <img src={event.poster} className={'aspect-square object-cover w-full rounded-lg'}/>
                 <div className={'absolute right-0 top-0 m-3'}>
@@ -19,7 +19,7 @@ export default function EventComponent({event}: {event: EventModel}) {
                             },
                             {
                                 key: 1,
-                                label: <Link to={`/manage-events/${event.id}/edit`} className={'text-current'}>edit</Link> ,
+                                label: <Link to={`/manage-events/${event._id}/edit`} className={'text-current'}>edit</Link> ,
                             },
                             {
                                 key: 2,
@@ -36,7 +36,7 @@ export default function EventComponent({event}: {event: EventModel}) {
                 </div>
             </div>
             <div>
-                <h2 className={'font-semibold text-xl capitalize'}>{event.name}</h2>
+                <h2 className={'font-semibold text-xl capitalize'}>{event.eventName}</h2>
                 <Tag color={'processing'}>{event.category}</Tag>
                 <p className={'line-clamp-2'}>{event.description}</p>
                 <Button type={'primary'}>View</Button>

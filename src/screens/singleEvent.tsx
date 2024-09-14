@@ -9,7 +9,7 @@ import {ArcElement, Chart, Legend, Tooltip} from "chart.js";
 import TicketTab from "../components/event/tickets.tsx";
 import {contrastRatio, extractImageColors} from "../data/palette.ts";
 import {useAppDispatch, useAppSelector} from "../hooks/hooks.ts";
-import {selectFocusEvent, setFocusEvent} from "../data/slices/EventSlice.ts";
+import {fetchEventById, selectFocusEvent} from "../data/slices/EventSlice.ts";
 
 
 Chart.register(ArcElement, Tooltip, Legend);
@@ -21,7 +21,7 @@ export default function SingleEventScreen() {
     useEffect(() => {
 
         if (id) {
-            dispatch(setFocusEvent(id))
+            dispatch(fetchEventById(id))
         }
 
     }, [id])
@@ -57,14 +57,14 @@ export function OverviewTab({event}: { event: EventModel }) {
         return tickets.reduce(
             (acc, ticket) => {
                 acc.sold += ticket.sold;
-                acc.total += ticket.stock;
+                acc.total += ticket.ticketsAvailable;
                 return acc;
             },
             {sold: 0, total: 0}
         );
     };
 
-    const {sold, total} = aggregateTickets(event.tickets);
+    const {sold, total} = aggregateTickets(event.ticketInfo);
 
     useEffect(() => {
         async function genColors() {
@@ -85,10 +85,10 @@ export function OverviewTab({event}: { event: EventModel }) {
             _colors.sort((a, b) => {
                 return b.saturation - a.saturation;
             });
-            if (_colors.length > event.tickets.length - 1) {
-                _colors = _colors.slice(0, event.tickets.length);
+            if (_colors.length > event.ticketInfo.length - 1) {
+                _colors = _colors.slice(0, event.ticketInfo.length);
             }
-            console.log(_colors.length, event.tickets.length);
+            console.log(_colors.length, event.ticketInfo.length);
 
             setColors([..._colors.map((c) => c.hex), '#6b7280']);
         }
@@ -100,11 +100,11 @@ export function OverviewTab({event}: { event: EventModel }) {
     }, [event]);
 
     const data = {
-        labels: [...event.tickets.map(ticket => ticket.name), 'Unsold'],
+        labels: [...event.ticketInfo.map(ticket => ticket.ticketType), 'Unsold'],
         datasets: [
             {
                 label: 'Tickets',
-                data: [...event.tickets.map(ticket => ticket.sold).sort((b, a) => a - b), total - sold],
+                data: [...event.ticketInfo.map(ticket => ticket.sold).sort((b, a) => a - b), total - sold],
                 backgroundColor: colors,
                 hoverBackgroundColor: colors,
             },

@@ -2,7 +2,12 @@ import {Dropdown, Avatar} from 'antd';
 import {UserOutlined, SettingOutlined, LogoutOutlined} from '@ant-design/icons';
 
 const ProfileDropdown = () => {
+    const _user = localStorage.getItem('user');
 
+    if (!_user) {
+        return <div></div>
+    }
+    const user = JSON.parse(_user);
     return (
         <Dropdown  menu={{
             items: [
@@ -29,8 +34,8 @@ const ProfileDropdown = () => {
 
                 {/* Name and Email */}
                 <div className="flex flex-col">
-                    <span className="text-white font-semibold">Sean Odera</span>
-                    <span className="text-sm text-gray-400">seanolero@outlook.com</span>
+                    <span className="text-white font-semibold">{user.firstName} {user.lastName}</span>
+                    <span className="text-sm text-gray-400">{user.email}</span>
                 </div>
             </div>
         </Dropdown>

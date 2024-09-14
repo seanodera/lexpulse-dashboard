@@ -13,6 +13,7 @@ import VenueWidget from "../components/venueWidget.tsx";
 import {useAppDispatch} from "../hooks/hooks.ts";
 import {createEvent} from "../data/slices/EventSlice.ts";
 import {useNavigate} from "react-router-dom";
+import {countries} from "country-data";
 
 
 const {Option} = Select;
@@ -31,9 +32,9 @@ const CreateEventScreen = () => {
     }, []);
 
     const EventSchema = Yup.object().shape({
-        name: Yup.string().required('Event name is required'),
+        eventName: Yup.string().required('Event name is required'),
         poster: Yup.mixed().required('Event poster is required'),
-        date: Yup.date().required('Event date is required'),
+        eventDate: Yup.date().required('Event date is required'),
         category: Yup.string().required('Event type is required'),
         description: Yup.string().required('Event description is required'),
         minAge: Yup.number().min(0, 'Age cannot be negative').required('Minimum age is required'),
@@ -46,18 +47,18 @@ const CreateEventScreen = () => {
             country: Yup.string().required('Country is required'),
         }),
     });
-
+    const user = localStorage.getItem('user');
     const initialValues: EventModel = {
-        name: '',
+        eventHostId: user ? JSON.parse(user).id : '',
+        eventName: '',
         poster: '',
-        date: new Date(),
+        eventDate: new Date(),
         location: '',
-        price: 0,
         cover: '',
-        id: '',
+        _id: '',
         description: '',
         category: EventType.Clubbing,
-        tickets: [],
+        ticketInfo: [],
         createdAt: new Date(),
         minAge: 18,
         dress: '',
@@ -72,6 +73,9 @@ const CreateEventScreen = () => {
         startSalesDate: new Date(),
         endSalesDate: new Date(),
         eventEnd: '',
+        country: 'Ghana',
+        currency: 'GHS',
+        approved: false
     };
 
     const handleImageUpload = (file: RcFile, setFieldValue: (field: string, value: string, shouldValidate?: boolean) => Promise<void | FormikErrors<EventModel>>, fieldName: string) => {
@@ -79,18 +83,26 @@ const CreateEventScreen = () => {
         return false; // Prevent default upload action
     };
     const navigation = useNavigate();
+
+    function handleSubmit(values: EventModel) {
+        console.log(values);
+        dispatch(createEvent(values)).then((action) => {
+            console.log(action);
+            if (action.meta.requestStatus === 'fulfilled') {
+                navigation('/manage-events');
+            }
+        });
+    }
+
     return (
         <Formik
             initialValues={initialValues}
             validationSchema={EventSchema}
-            onSubmit={(values: EventModel) => {
-                console.log(values);
-                dispatch(createEvent(values)).then((action) => {
-                    if (action.meta.requestStatus === 'fulfilled') {
-                        navigation('/manage-events');
-                    }
-                });
+            onSubmit={(values) => {
+                handleSubmit(values);
+
             }}
+
         >
             {({setFieldValue, values}) => (
                 <Form>
@@ -101,8 +113,8 @@ const CreateEventScreen = () => {
                             <div className={'flex justify-between items-center w-full'}>
                                 <div className={'max-w-xl'}>
                                     <h4 className={'text-gray-300 font-medium'}>Event Name</h4>
-                                    <Field name="name" as={Input} className={inputCls} placeholder="Event Name"/>
-                                    <ErrorMessage name="name" component="div" className="text-red-500"/>
+                                    <Field name="eventName" as={Input} className={inputCls} placeholder="Event Name"/>
+                                    <ErrorMessage name="eventName" component="div" className="text-red-500"/>
                                 </div>
                                 <div className={'flex gap-2'}>
                                     <Upload
@@ -111,7 +123,7 @@ const CreateEventScreen = () => {
                                     >
                                         <Button type={'default'} ghost>Change Cover</Button>
                                     </Upload>
-                                    <Button type={'primary'} htmlType="submit">Save Changes</Button>
+                                    <Button typeof={'submit'} type={'primary'} htmlType="submit">Save Changes</Button>
                                 </div>
                             </div>
                         </div>
@@ -220,8 +232,19 @@ const CreateEventScreen = () => {
                                     <div>
                                         <label className={'text-gray-500 font-medium'}
                                                htmlFor="venue.country">Country</label>
-                                        <Field name="venue.country" as={Input} className={inputCls}
-                                               placeholder="Country"/>
+                                        <select name={'venue.country'} className={inputCls}
+                                                onChange={(e) => {
+                                                    setFieldValue('country', countries[ e.target.value ].name);
+                                                    setFieldValue('currency', countries[ e.target.value ].currencies[ 0 ])
+                                                    setFieldValue('venue.country',countries[ e.target.value ].name)
+                                                    console.log(values)
+                                                }}>
+                                            <option value={'GH'}>{countries[ 'GH' ].name}</option>
+                                            <option value={'KE'}>{countries[ 'KE' ].name}</option>
+
+                                        </select>
+                                        {/*<Field name="venue.country" as={Input} className={inputCls}*/}
+                                        {/*       placeholder="Country"/>*/}
                                         <ErrorMessage name="venue.country" component="div" className="text-red-500"/>
                                     </div>
                                 </>
@@ -235,9 +258,9 @@ const CreateEventScreen = () => {
                                 <DatePicker
                                     format={'dddd MMM DD, YYYY'}
                                     className={inputCls}
-                                    onChange={(value) => setFieldValue('date', new Date(value.toString()))}
+                                    onChange={(value) => setFieldValue('eventDate', new Date(value.toString()))}
                                 />
-                                <ErrorMessage name="date" component="div" className="text-red-500"/>
+                                <ErrorMessage name="eventDate" component="div" className="text-red-500"/>
                             </div>
                             <div>
                                 <h4 className={'text-gray-500 font-medium'}>Event Last Entry</h4>
@@ -321,62 +344,65 @@ const CreateEventScreen = () => {
                         <div className={'flex justify-between'}>
                             <h1 className={'text-2xl'}>Tickets</h1>
                             <Button type={'primary'} ghost onClick={() => {
-                                setFieldValue('tickets', [
-                                    ...values.tickets,
-                                    {id: Date.now().toString(), name: '', price: 0, stock: 0},
+                                setFieldValue('ticketInfo', [
+                                    ...values.ticketInfo,
+                                    {id: Date.now().toString(), name: '', price: 0, ticketsAvailable: 0,ticketsLeft: 0, sold: 0},
                                 ]);
                             }}>
                                 <PlusOutlined/> Add Ticket
                             </Button>
                         </div>
 
-                        <FieldArray name="tickets">
+                        <FieldArray name="ticketInfo">
                             {({remove}) => (
                                 <div className={'grid grid-cols-3 gap-8'}>
-                                    {values.tickets.map((_ticket: Ticket, index: number) => (
-                                        <fieldset key={index} className={'space-y-2'}>
-                                            <div className={'flex items-center justify-between'}>
-                                                <h3 className={'font-semibold'}>Ticket {index + 1}</h3>
-                                                <Button danger onClick={() => remove(index)}>
-                                                    Remove Ticket
-                                                </Button>
-                                            </div>
-                                            <Field name={`tickets[${index}].name`}>
-                                                {({field}: any) => (
-                                                    <div>
-                                                        <label className={'block font-semibold'}>Name</label>
-                                                        <input {...field} placeholder="Ticket Name"
-                                                               className={inputCls}/>
-                                                    </div>
-                                                )}
-                                            </Field>
-                                            <Field name={`tickets[${index}].price`}>
-                                                {({field}: any) => (
-                                                    <div>
-                                                        <label className={'block font-semibold'}>Price</label>
-                                                        <input {...field} type="number" placeholder="Price"
-                                                               className={inputCls} min={1}/>
-                                                    </div>
-                                                )}
-                                            </Field>
-                                            <Field name={`tickets[${index}].stock`}>
-                                                {({field}: any) => (
-                                                    <div>
-                                                        <label className={'block font-semibold'}>Stock</label>
-                                                        <input {...field} type="number" placeholder="Stock"
-                                                               className={inputCls} min={1}/>
-                                                    </div>
-                                                )}
-                                            </Field>
-                                            <div>
-                                                <h3 className={'font-semibold'}>Sales End</h3>
-                                                <div className={'flex justify-between mb-1'}><h4
-                                                    className={'text-sm'}>Global</h4> <Switch/></div>
-                                                <DatePicker format={'dddd MMM DD, YYYY'}
-                                                            className={inputCls}/>
-                                            </div>
-                                        </fieldset>
-                                    ))}
+                                    {values.ticketInfo.map((_ticket: Ticket, index: number) => {
+
+                                        return (
+                                            <fieldset key={index} className={'space-y-2'}>
+                                                <div className={'flex items-center justify-between'}>
+                                                    <h3 className={'font-semibold'}>Ticket {index + 1}</h3>
+                                                    <Button danger onClick={() => remove(index)}>
+                                                        Remove Ticket
+                                                    </Button>
+                                                </div>
+                                                <Field name={`ticketInfo[${index}].ticketType`}>
+                                                    {({field}: any) => (
+                                                        <div>
+                                                            <label className={'block font-semibold'}>Name</label>
+                                                            <input {...field} placeholder="Ticket Name"
+                                                                   className={inputCls}/>
+                                                        </div>
+                                                    )}
+                                                </Field>
+                                                <Field name={`ticketInfo[${index}].price`}>
+                                                    {({field}: any) => (
+                                                        <div>
+                                                            <label className={'block font-semibold'}>Price</label>
+                                                            <input {...field} type="number" placeholder="Price"
+                                                                   className={inputCls} min={1}/>
+                                                        </div>
+                                                    )}
+                                                </Field>
+                                                <Field name={`ticketInfo[${index}].ticketsAvailable`}>
+                                                    {({field}: any) => (
+                                                        <div>
+                                                            <label className={'block font-semibold'}>Stock</label>
+                                                            <input {...field} type="number" placeholder="Stock"
+                                                                   className={inputCls} min={1}/>
+                                                        </div>
+                                                    )}
+                                                </Field>
+                                                <div>
+                                                    <h3 className={'font-semibold'}>Sales End</h3>
+                                                    <div className={'flex justify-between mb-1'}><h4
+                                                        className={'text-sm'}>Global</h4> <Switch/></div>
+                                                    <DatePicker format={'dddd MMM DD, YYYY'}
+                                                                className={inputCls}/>
+                                                </div>
+                                            </fieldset>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </FieldArray>

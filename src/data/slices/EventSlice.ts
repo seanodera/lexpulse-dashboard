@@ -1,74 +1,160 @@
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import {generateEvents} from "../generator.ts";
-import {faker} from "@faker-js/faker";
-import {RootState} from "../../store.ts";
-import {EventModel} from "../types.ts";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { RootState } from "../../store.ts";
+import { EventModel } from "../types.ts";
+import { getEvents, addEvent, getEvent, updateEvent, deleteEvent } from "../eventData.ts";
 
-
-const fetchEvents = createAsyncThunk('events/fetch', async () => {
-
-    return generateEvents(faker.number.int({max: 2, min: 1}));
+// Fetch events from API
+export const fetchEvents = createAsyncThunk('events/fetch', async (id: string, { rejectWithValue }) => {
+    try {
+        const response = await getEvents(id);
+        return response.data.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error fetching events');
+        }
+    }
 });
 
-export const setFocusEvent = createAsyncThunk<EventModel, string, { state: RootState }>(
-    'events/focus',
-    async (id, {getState}) => {
-        const {events} = getState();
-        let event = events.events.find(e => e.id === id);
+// Fetch a single event by ID
+export const fetchEventById = createAsyncThunk('events/fetchById', async (id: string, { rejectWithValue,getState }) => {
+    try {
+        const {events} = getState() as RootState;
+        let event = events.events.find(e => e._id === id);
         if (!event) {
-            event = generateEvents(1)[ 0 ];
-            event.id = id;
+            const response = await getEvent(id);
+            event = response.data.event;
         }
-        return event;
+       return event;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error fetching event');
+        }
     }
-);
+});
 
-export const createEvent = createAsyncThunk('events/create', async (event: EventModel, {getState}) => {
-    const {events} = getState() as RootState;
+// Create a new event
+export const createEvent = createAsyncThunk('events/create', async (event: EventModel, { rejectWithValue }) => {
+    try {
+        console.log(event);
+        const response = await addEvent(event);
+        console.log(response);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error creating event');
+        }
+    }
+});
 
-    return [...events.events, {...event, id: faker.string.alphanumeric(8)}]
-})
+// Update an existing event
+export const updateEventById = createAsyncThunk('events/update', async ({ id, eventData }: { id: string, eventData: Partial<EventModel> }, { rejectWithValue }) => {
+    try {
+        const response = await updateEvent(id, eventData);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error updating event');
+        }
+    }
+});
 
+// Delete an event by ID
+export const deleteEventById = createAsyncThunk('events/delete', async (id: string, { rejectWithValue }) => {
+    try {
+        const response = await deleteEvent(id);
+        return response.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error deleting event');
+        }
+    }
+});
+
+
+// Event slice state
 interface EventState {
     events: EventModel[];
     focusEvent?: EventModel;
     fetching: boolean;
-    fetchError: string;
+    fetchError: string | null;
 }
 
 const initialState: EventState = {
     events: [],
     focusEvent: undefined,
     fetching: false,
-    fetchError: '',
-}
+    fetchError: null,
+};
 
 const EventSlice = createSlice({
     name: "events",
-    initialState: initialState,
+    initialState,
     reducers: {},
     extraReducers: (builder) => {
-        builder.addCase(fetchEvents.pending, (state) => {
-            state.fetching = true;
-            state.fetchError = '';
-        }).addCase(fetchEvents.fulfilled, (state, action) => {
-            state.events = action.payload;
-            state.fetching = false;
-        }).addCase(fetchEvents.rejected, (state) => {
-            state.fetching = false;
-            state.fetchError = 'Error Getting Events'
-        }).addCase(setFocusEvent.fulfilled, (state, action) => {
-            state.focusEvent = action.payload;
-        }).addCase(setFocusEvent.rejected, (state) => {
-            state.fetchError = 'Error Setting Focus Event';
-        }).addCase(createEvent.fulfilled, (state,action) => {
-            state.events = action.payload;
-        })
-    }
-})
+        builder
+            // Fetch all events
+            .addCase(fetchEvents.pending, (state) => {
+                state.fetching = true;
+                state.fetchError = null;
+            })
+            .addCase(fetchEvents.fulfilled, (state, action) => {
+                state.events = action.payload;
+                state.fetching = false;
+            })
+            .addCase(fetchEvents.rejected, (state, action) => {
+                state.fetching = false;
+                state.fetchError = action.payload as string;
+            })
 
+            // Fetch single event by ID
+            .addCase(fetchEventById.fulfilled, (state, action) => {
+                state.focusEvent = action.payload;
+            })
+            .addCase(fetchEventById.rejected, (state, action) => {
+                state.fetchError = action.payload as string;
+            })
 
+            // Create event
+            .addCase(createEvent.fulfilled, (state, action) => {
+                state.events.push(action.payload);
+            })
+            .addCase(createEvent.rejected, (state, action) => {
+                state.fetchError = action.payload as string;
+            })
+
+            // Update event
+            .addCase(updateEventById.fulfilled, (state, action) => {
+                const index = state.events.findIndex(e => e._id === action.payload._id);
+                if (index !== -1) {
+                    state.events[index] = action.payload;
+                }
+            })
+            .addCase(updateEventById.rejected, (state, action) => {
+                state.fetchError = action.payload as string;
+            })
+
+            // Delete event
+            .addCase(deleteEventById.fulfilled, (state, action) => {
+                state.events = state.events.filter(event => event._id !== action.meta.arg);
+            })
+            .addCase(deleteEventById.rejected, (state, action) => {
+                state.fetchError = action.payload as string;
+            });
+    },
+});
+
+// Selectors
 export const selectAllEvents = (state: RootState) => state.events.events;
 export const selectFocusEvent = (state: RootState) => state.events.focusEvent;
+
 export default EventSlice.reducer;
-export {fetchEvents}

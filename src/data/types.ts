@@ -27,25 +27,30 @@ export const EventTypeList = [
     EventType.Seminar,
     EventType.Movie
 ];
+
 export interface EventModel {
-    name: string;
+    eventName: string;
+    eventHostId: string;
     poster: string;
-    date: Date; // Using Date object for better date manipulation
+    eventDate: Date; // Event date
     location: string;
-    price: number;
+    // price: number;
     cover: string;
-    id: string;
+    _id: string;
     description: string;
     category: EventType;
-    tickets: Ticket[];
+    ticketInfo: Ticket[];
     discount?: Discount[];
     createdAt: Date;
-    startSalesDate: Date;
-    endSalesDate: Date;
-    eventEnd:string;
-    minAge: number;
-    dress: string;
+    startSalesDate?: Date; // Optional
+    endSalesDate?: Date; // Optional
+    eventEnd?: string; // Optional
+    minAge?: number; // Optional minimum age restriction
+    dress?: string; // Optional dress code
     lastEntry?: string;
+    country: string;
+    currency: string;
+    approved: boolean;
     venue: {
         name: string;
         street: string;
@@ -57,24 +62,24 @@ export interface EventModel {
     };
 }
 
+export interface Ticket {
+    _id: string;
+    ticketType: string;
+    price: number;
+    ticketsAvailable: number;
+    ticketsLeft: number;
+    sold: number;
+    saleEnd?: Date; // Optional
+    saleStart?: Date; // Optional
+}
+
 export interface Discount {
-    id:string;
+    id: string;
     ticketIds: string[];
     type: 'FlatRate' | 'Percentage';
     value: number;
     start: Date;
     end: Date;
-}
-
-export interface Ticket {
-    id:string;
-    name: string;
-    price: number;
-    // description: string;
-    stock: number;
-    sold: number;
-    saleEnd?: Date;
-    saleStart?: Date;
 }
 
 export interface Venue {

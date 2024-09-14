@@ -5,11 +5,14 @@ import {selectAllEvents} from "../data/slices/EventSlice.ts";
 export default function ManageEvent() {
     const events = useAppSelector(selectAllEvents);
 
-
+    if (!events){
+        return <div></div>
+    }
+    console.log(events);
     return <div className={'p-4'}>
         <div className={'flex justify-between mb-2'}><h1 className={'text-3xl font-semibold'}>All Events</h1></div>
         <div className={'grid grid-cols-4 gap-8'}>
-            {events.map(event => (<EventComponent key={event.id} event={event}/>))}
+            {events.map(event => (<EventComponent key={event._id} event={event}/>))}
         </div>
     </div>
 }

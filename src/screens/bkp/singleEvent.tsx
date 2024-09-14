@@ -19,7 +19,7 @@ export default function SingleEventScreen() {
     useEffect(() => {
         const _event = generateEvents(1)[ 0 ];
         if (id) {
-            _event.id = id;
+            _event._id = id;
         }
         setEvent(_event)
     }, [id])
@@ -53,14 +53,14 @@ export function OverviewTab({event}: { event: EventModel }) {
         return tickets.reduce(
             (acc, ticket) => {
                 acc.sold += ticket.sold;
-                acc.total += ticket.stock;
+                acc.total += ticket.ticketsAvailable;
                 return acc;
             },
             {sold: 0, total: 0}
         );
     };
 
-    const {sold, total} = aggregateTickets(event.tickets);
+    const {sold, total} = aggregateTickets(event.ticketInfo);
 
     useEffect(() => {
         async function genColors() {
@@ -81,10 +81,10 @@ export function OverviewTab({event}: { event: EventModel }) {
             _colors.sort((a, b) => {
                 return b.saturation - a.saturation;
             });
-            if (_colors.length > event.tickets.length - 1) {
-                _colors = _colors.slice(0, event.tickets.length);
+            if (_colors.length > event.ticketInfo.length - 1) {
+                _colors = _colors.slice(0, event.ticketInfo.length);
             }
-            console.log(_colors.length, event.tickets.length);
+            console.log(_colors.length, event.ticketInfo.length);
 
             setColors([..._colors.map((c) => c.hex), '#6b7280']);
         }
@@ -96,11 +96,11 @@ export function OverviewTab({event}: { event: EventModel }) {
     }, [event]);
 
     const data = {
-        labels: [...event.tickets.map(ticket => ticket.name), 'Unsold'],
+        labels: [...event.ticketInfo.map(ticket => ticket.ticketType), 'Unsold'],
         datasets: [
             {
                 label: 'Tickets',
-                data: [...event.tickets.map(ticket => ticket.sold).sort((b, a) => a - b), total - sold],
+                data: [...event.ticketInfo.map(ticket => ticket.sold).sort((b, a) => a - b), total - sold],
                 backgroundColor: colors,
                 hoverBackgroundColor: colors,
             },
@@ -199,11 +199,11 @@ export function TicketTab({event}: { event: EventModel }) {
                     danger={editMode}>{editMode ? 'Cancel' : 'Edit'}</Button>
         </div>
         <div className={'grid grid-cols-3 gap-8 mt-4'}>
-            {event.tickets.map((ticket, index) => <div key={index} className={'rounded-lg shadow bg-white p-4'}>
+            {event.ticketInfo.map((ticket, index) => <div key={index} className={'rounded-lg shadow bg-white p-4'}>
                 <div className={'flex items-start justify-between'}>
                     <div>
-                        <h4 className={'text-gray-500'}>Ticket Name</h4>
-                        <h3 className={'font-semibold mb-1'}>{ticket.name}</h3>
+                        <h4 className={'text-gray-500'}>Ticket Type</h4>
+                        <h3 className={'font-semibold mb-1'}>{ticket.ticketType}</h3>
                     </div>
                     <Button danger hidden={!editMode}>Remove</Button>
                 </div>
@@ -214,8 +214,8 @@ export function TicketTab({event}: { event: EventModel }) {
                             <h3 className={'font-semibold mb-1'}>GHS {ticket.price}</h3>
                         </div>
                         <div>
-                            <h4 className={'text-gray-500 font-medium'}>Tickets Stock</h4>
-                            <h3 className={'font-semibold mb-1'}>{ticket.stock}</h3>
+                            <h4 className={'text-gray-500 font-medium'}>Tickets Available</h4>
+                            <h3 className={'font-semibold mb-1'}>{ticket.ticketsAvailable}</h3>
                         </div>
                         <div>
                             <h4 className={'text-gray-500 font-medium'}>Tickets Sold</h4>
@@ -223,7 +223,7 @@ export function TicketTab({event}: { event: EventModel }) {
                         </div>
                         <div>
                             <h4 className={'text-gray-500 font-medium'}>Sales Close Date</h4>
-                            <h3 className={'font-semibold mb-1'}>{moment(ticket.saleEnd || event.date).format('EEE MMM dd, YYYY')}</h3>
+                            <h3 className={'font-semibold mb-1'}>{moment(ticket.saleEnd || event.eventDate).format('EEE MMM dd, YYYY')}</h3>
                         </div>
                     </div>
                     <div className={'flex flex-col items-center justify-center'}>

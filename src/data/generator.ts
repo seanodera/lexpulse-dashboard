@@ -14,26 +14,27 @@ export function generateEvents(count: number): EventModel[] {
         const tickets: Ticket[] = Array.from({ length: ticketCount }, () => {
             const stock = faker.number.int({min: 50, max: 1000});
             return ({
-                id: faker.string.alphanumeric(6),
+                _id: '',
+                ticketType: faker.string.alphanumeric(6),
                 name: faker.commerce.productName(),
                 price: faker.number.float({min: 10, max: 300, multipleOf: 0.01}),
                 // description: faker.lorem.sentence(),
-                stock: stock,
+                ticketsAvailable: stock,
+                ticketsLeft: stock,
                 sold: faker.number.int({min: 0, max: stock}),
             });
         });
         const venueSaved = faker.datatype.boolean();
         // Generate event details
         const event: EventModel = {
-            name: faker.company.catchPhraseNoun(),
+            eventName: faker.company.catchPhraseNoun(),
             poster: faker.image.urlLoremFlickr({category: 'poster'}), // Event poster
-            date: faker.date.future(), // Random future date
+            eventDate: faker.date.future(), // Random future date
             location: faker.location.city() + ', ' + faker.location.country(),
-            price: faker.number.float({min: 20, max: 500, multipleOf: 0.01}), // Base price
             cover: faker.image.urlLoremFlickr({category: 'concert'}), // Event cover image
-            id: faker.string.alphanumeric(8), // Unique event ID
+            _id: faker.string.alphanumeric(8), // Unique event ID
             category: eventType as EventType, // Random event category
-            tickets: tickets, // Tickets array
+            ticketInfo: tickets, // Tickets array
             description: faker.lorem.paragraphs({min: 2, max: 8}),
             createdAt: faker.date.recent(),
             venue: {
@@ -49,7 +50,11 @@ export function generateEvents(count: number): EventModel[] {
             dress: 'Casual',
             startSalesDate: faker.date.recent(),
             endSalesDate: faker.date.future(),
-            eventEnd: ""
+            eventEnd: "",
+            eventHostId: "",
+            country: "",
+            currency: "",
+            approved: false
         };
 
         events.push(event);
