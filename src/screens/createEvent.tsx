@@ -6,12 +6,13 @@ import {generateVenues} from "../data/generator.ts";
 import {faker} from "@faker-js/faker";
 import {format} from "date-fns";
 import {Textarea} from "@headlessui/react";
-import {Formik, Field, Form, ErrorMessage, FormikErrors, FieldArray} from 'formik';
+import {ErrorMessage, Field, FieldArray, Form, Formik, FormikErrors} from 'formik';
 import * as Yup from 'yup';
 import {FileImageOutlined, PlusOutlined} from "@ant-design/icons";
 import VenueWidget from "../components/venueWidget.tsx";
 import {useAppDispatch} from "../hooks/hooks.ts";
 import {createEvent} from "../data/slices/EventSlice.ts";
+import {useNavigate} from "react-router-dom";
 
 
 const {Option} = Select;
@@ -77,14 +78,18 @@ const CreateEventScreen = () => {
         setFieldValue(fieldName, URL.createObjectURL(file));
         return false; // Prevent default upload action
     };
-
+    const navigation = useNavigate();
     return (
         <Formik
             initialValues={initialValues}
             validationSchema={EventSchema}
             onSubmit={(values: EventModel) => {
                 console.log(values);
-                dispatch(createEvent(values));
+                dispatch(createEvent(values)).then((action) => {
+                    if (action.meta.requestStatus === 'fulfilled') {
+                        navigation('/manage-events');
+                    }
+                });
             }}
         >
             {({setFieldValue, values}) => (
@@ -311,7 +316,6 @@ const CreateEventScreen = () => {
                     </div>
 
 
-
                     {/* Tickets Section */}
                     <div className={'bg-white p-4 space-y-4 my-8'}>
                         <div className={'flex justify-between'}>
@@ -319,15 +323,15 @@ const CreateEventScreen = () => {
                             <Button type={'primary'} ghost onClick={() => {
                                 setFieldValue('tickets', [
                                     ...values.tickets,
-                                    { id: Date.now().toString(), name: '', price: 0, stock: 0 },
+                                    {id: Date.now().toString(), name: '', price: 0, stock: 0},
                                 ]);
                             }}>
-                                <PlusOutlined /> Add Ticket
+                                <PlusOutlined/> Add Ticket
                             </Button>
                         </div>
 
                         <FieldArray name="tickets">
-                            {({ remove }) => (
+                            {({remove}) => (
                                 <div className={'grid grid-cols-3 gap-8'}>
                                     {values.tickets.map((_ticket: Ticket, index: number) => (
                                         <fieldset key={index} className={'space-y-2'}>
@@ -338,32 +342,36 @@ const CreateEventScreen = () => {
                                                 </Button>
                                             </div>
                                             <Field name={`tickets[${index}].name`}>
-                                                {({ field }: any) => (
+                                                {({field}: any) => (
                                                     <div>
                                                         <label className={'block font-semibold'}>Name</label>
-                                                        <input {...field} placeholder="Ticket Name" className={inputCls} />
+                                                        <input {...field} placeholder="Ticket Name"
+                                                               className={inputCls}/>
                                                     </div>
                                                 )}
                                             </Field>
                                             <Field name={`tickets[${index}].price`}>
-                                                {({ field }: any) => (
+                                                {({field}: any) => (
                                                     <div>
                                                         <label className={'block font-semibold'}>Price</label>
-                                                        <input {...field} type="number" placeholder="Price" className={inputCls} min={1} />
+                                                        <input {...field} type="number" placeholder="Price"
+                                                               className={inputCls} min={1}/>
                                                     </div>
                                                 )}
                                             </Field>
                                             <Field name={`tickets[${index}].stock`}>
-                                                {({ field }: any) => (
+                                                {({field}: any) => (
                                                     <div>
                                                         <label className={'block font-semibold'}>Stock</label>
-                                                        <input {...field} type="number" placeholder="Stock" className={inputCls} min={1} />
+                                                        <input {...field} type="number" placeholder="Stock"
+                                                               className={inputCls} min={1}/>
                                                     </div>
                                                 )}
                                             </Field>
                                             <div>
                                                 <h3 className={'font-semibold'}>Sales End</h3>
-                                                <div className={'flex justify-between mb-1'}><h4 className={'text-sm'}>Global</h4> <Switch/></div>
+                                                <div className={'flex justify-between mb-1'}><h4
+                                                    className={'text-sm'}>Global</h4> <Switch/></div>
                                                 <DatePicker format={'dddd MMM DD, YYYY'}
                                                             className={inputCls}/>
                                             </div>
@@ -378,7 +386,6 @@ const CreateEventScreen = () => {
         </Formik>
     );
 };
-
 
 
 export default CreateEventScreen;
