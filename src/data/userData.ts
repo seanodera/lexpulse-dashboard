@@ -21,6 +21,7 @@ export async function signUpHost({ firstName, lastName, email, pass }: { firstNa
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
+    formData.append('username', firstName+'.'+lastName);
     formData.append("email", email);
     formData.append("country", country);
     formData.append("gender", "Unset");

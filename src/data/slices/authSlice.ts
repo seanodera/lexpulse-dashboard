@@ -8,7 +8,10 @@ import {createSlice} from "@reduxjs/toolkit";
 
 const AuthenticationSlice = createSlice({
     name: "authentication",
-    initialState: undefined,
+    initialState: {
+        user: undefined,
+
+    },
     reducers: {
 
     },

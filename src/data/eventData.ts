@@ -3,10 +3,11 @@ import {EventModel} from "./types.ts";
 import {createEventModelFormData} from "./createFormDatas.ts";
 import {common} from "./utils.ts";
 
-const baseUrl = common.baseUrl; // Replace with your actual base URL
+const baseUrl = common.baseUrl;
 
 const getConfig = () => {
-    const token = localStorage.getItem('token'); // Retrieve token from localStorage
+    const token = localStorage.getItem('token');
+    console.log(baseUrl)
     return {
         headers: {
             authorization: `Bearer ${token}`

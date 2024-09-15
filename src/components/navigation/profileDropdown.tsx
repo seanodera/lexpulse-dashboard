@@ -1,9 +1,10 @@
 import {Dropdown, Avatar} from 'antd';
 import {UserOutlined, SettingOutlined, LogoutOutlined} from '@ant-design/icons';
+import {useNavigate} from "react-router-dom";
 
 const ProfileDropdown = () => {
     const _user = localStorage.getItem('user');
-
+    const navigate = useNavigate();
     if (!_user) {
         return <div></div>
     }
@@ -24,7 +25,12 @@ const ProfileDropdown = () => {
                 {
                     key: 3,
                     icon: <LogoutOutlined/>,
-                    label: ' Logout'
+                    label: ' Logout',
+                    onClick: () => {
+                        localStorage.clear();
+                        navigate('/login');
+                    },
+                    danger:true
                 }
             ]
         }} trigger={['click']}>

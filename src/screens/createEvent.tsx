@@ -256,8 +256,9 @@ const CreateEventScreen = () => {
                             <div>
                                 <h4 className={'text-gray-500 font-medium'}>Event Start Date</h4>
                                 <DatePicker
-                                    format={'dddd MMM DD, YYYY'}
+                                    format={'dddd MMM DD, YYYY, HH:mm'}
                                     className={inputCls}
+                                    showTime
                                     onChange={(value) => setFieldValue('eventDate', new Date(value.toString()))}
                                 />
                                 <ErrorMessage name="eventDate" component="div" className="text-red-500"/>
