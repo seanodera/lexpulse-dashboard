@@ -13,6 +13,34 @@ export enum EventType {
     Movie = "movie",
 }
 
+export enum VenueType {
+    ConcertHall = "Concert Hall",
+    Theater = "Theater",
+    Stadium = "Stadium",
+    ConferenceCenter = "Conference Center",
+    OutdoorPark = "Outdoor Park",
+    Nightclub = "Nightclub",
+    ArtGallery = "Art Gallery",
+    Museum = "Museum",
+    BanquetHall = "Banquet Hall",
+    ExhibitionCenter = "Exhibition Center",
+    HotelBallroom = "Hotel Ballroom",
+    SportsArena = "Sports Arena",
+    CivicCenter = "Civic Center",
+    Beach = "Beach",
+    Rooftop = "Rooftop",
+    CommunityCenter = "Community Center",
+    Amphitheater = "Amphitheater",
+    PrivateResidence = "Private Residence",
+    RestaurantBar = "Restaurant/Bar",
+    Garden = "Garden",
+    Warehouse = "Warehouse",
+    Arena = "Arena",
+    ShoppingMall = "Shopping Mall",
+    ConventionHall = "Convention Hall",
+    Cafe = "Café"
+}
+
 // Extract constant array for potential reuse and increased readability
 export const EventTypeList = [
     EventType.Clubbing,
@@ -28,7 +56,43 @@ export const EventTypeList = [
     EventType.Movie
 ];
 
+export const VenueTypeList = [
+    VenueType.ConcertHall,
+    VenueType.Theater,
+    VenueType.Stadium,
+    VenueType.ConferenceCenter,
+    VenueType.OutdoorPark,
+    VenueType.Nightclub,
+    VenueType.ArtGallery,
+    VenueType.Museum,
+    VenueType.BanquetHall,
+    VenueType.ExhibitionCenter,
+    VenueType.HotelBallroom,
+    VenueType.SportsArena,
+    VenueType.CivicCenter,
+    VenueType.Beach,
+    VenueType.Rooftop,
+    VenueType.CommunityCenter,
+    VenueType.Amphitheater,
+    VenueType.PrivateResidence,
+    VenueType.RestaurantBar,
+    VenueType.Garden,
+    VenueType.Warehouse,
+    VenueType.Arena,
+    VenueType.ShoppingMall,
+    VenueType.ConventionHall,
+    VenueType.Cafe
+]
+
 export interface EventModel {
+
+    subCategory?: string;
+
+    image: string[];
+    viewCount: number;
+    weightedRating: number;
+    ticketSales: number;
+
     eventName: string;
     eventHostId: string;
     poster: string;
@@ -60,6 +124,7 @@ export interface EventModel {
         saved: boolean;
         id?: string;
     };
+    revenue: number,
 }
 
 export interface Ticket {
@@ -93,18 +158,63 @@ export interface Venue {
     followers: number;
     cover: string;
     capacity: number;
-    type: string;
+    type: VenueType;
     yearEvents: number | 0;
     description?: string;
     phone: string;
     email: string;
 }
 
-export interface Purchase {
+export interface CartItem {
     id: string;
-    user: string;
-    eventName: string;
-    ticketQuantity: number;
-    purchaseDate: string;
-    totalAmount: number;
+    name: string;
+    amount: number;
+    price: number;
+}
+
+
+
+export interface Purchase {
+    eventId: string;
+    attendeeId: string;
+    paymentMethod?: string;
+    ticketInfo: { ticketType: string, numberOfTickets: number}[ ];
+    totalPrice?: number;
+    amountPaid?: number;
+    status?: string;
+    paymentId?: string;
+    createdAt: Date;
+    _id: string;
+}
+
+
+
+export interface CombinedTicket {
+    _id: string;
+    eventId: EventModel;
+    attendeeId: string;
+    paymentMethod: string;
+    ticketInfo: {
+        _id: string;
+        ticketType: string;
+        numberOfTickets: number;
+    }[];
+    totalPrice: number;
+    status: string;
+    createdAt: string;
+    amountPaid: number;
+}
+
+export interface Transaction {
+    _id: string;
+    reference: string;
+    eventId: string;
+    hostId: string;
+    attendeeId: string;
+    user?:any;
+    amount: number;
+    status: 'PENDING' | 'SUCCESS' | 'FAILED';
+    createdAt?: Date;
+    updatedAt?: Date;
+    cumulativeRevenue: number | 0;
 }

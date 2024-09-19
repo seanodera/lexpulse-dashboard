@@ -5,7 +5,7 @@ import {common} from "./utils.ts";
 
 const baseUrl = common.baseUrl;
 
-const getConfig = () => {
+export const getConfig = () => {
     const token = localStorage.getItem('token');
     console.log(baseUrl)
     return {

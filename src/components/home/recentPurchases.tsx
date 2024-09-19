@@ -1,63 +1,42 @@
 // components/home/recentPurchases.tsx
-import  { useEffect, useState } from 'react';
 import { Table } from 'antd';
-import {Purchase} from "../../data/types.ts";
-import {faker} from "@faker-js/faker";
+import {useAppSelector} from "../../hooks/hooks.ts";
+import {selectTransactions} from "../../data/slices/transactionSlice.ts";
 
 
 const columns = [
     {
         title: 'ID',
-        dataIndex: 'id',
-        key: 'id',
+        dataIndex: '_id',
+        key: '_id',
     },
     {
         title: 'User',
         dataIndex: 'user',
         key: 'user',
+        render: (user: any) => `${user.firstName} ${user.lastName}`, // Assuming user has these properties
     },
     {
         title: 'Event Name',
-        dataIndex: 'eventName',
-        key: 'eventName',
-    },
-    {
-        title: 'Ticket Quantity',
-        dataIndex: 'ticketQuantity',
-        key: 'ticketQuantity',
+        dataIndex: 'event',
+        key: 'eventId',
     },
     {
         title: 'Purchase Date',
-        dataIndex: 'purchaseDate',
-        key: 'purchaseDate',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (date: Date) => new Date(date).toLocaleDateString(),
     },
     {
         title: 'Total Amount',
-        dataIndex: 'totalAmount',
-        key: 'totalAmount',
+        dataIndex: 'amount',
+        key: 'amount',
         render: (amount: number) => `$${amount.toFixed(2)}`,
     },
 ];
 
-function generateFakePurchases(): Purchase[] {
-    return Array.from({ length: 10 }, () => ({
-        id: faker.string.alphanumeric(10),
-        user: faker.person.fullName(),
-        eventName: faker.company.catchPhrase(),
-        ticketQuantity: faker.number.int({ min: 1, max: 5 }),
-        purchaseDate: faker.date.recent().toISOString(), // format the date
-        totalAmount: parseFloat(faker.finance.amount({min:10, max: 500, dec: 2})),
-    }));
-}
-
 export default function RecentPurchases() {
-    const [purchases, setPurchases] = useState<Purchase[]>([]);
+    const data = useAppSelector(selectTransactions)
 
-    useEffect(() => {
-        // Generate and set the fake purchases on component mount
-        const data = generateFakePurchases();
-        setPurchases(data);
-    }, []);
-
-    return <Table dataSource={purchases} columns={columns} rowKey="id" pagination={false} />;
+    return <Table dataSource={data} columns={columns} rowKey="_id" pagination={false} />;
 }

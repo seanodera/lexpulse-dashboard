@@ -1,14 +1,15 @@
 import {useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {EventModel, EventType, Venue} from "../data/types.ts";
-import {generateEvents, generateVenues} from "../data/generator.ts";
 import {Button, DatePicker, Select, Tag, TimePicker, Upload} from "antd";
 import {UploadOutlined} from "@ant-design/icons";
 import {Input, Textarea} from "@headlessui/react";
 import {format} from "date-fns";
 import {RcFile} from "antd/lib/upload";
-
-import {faker} from "@faker-js/faker";
+import {useAppDispatch, useAppSelector} from "../hooks/hooks.ts";
+import {fetchEventById, selectFocusEvent, updateEventById} from "../data/slices/EventSlice.ts";
+import dayjs from "dayjs";
+import {countries} from "country-data";
 
 const eventCategories = Object.keys(EventType);
 
@@ -19,34 +20,44 @@ export default function EditEventScreen() {
     const [savedVenues, setSavedVenues] = useState<Venue[]>([]);
     const [event, setEvent] = useState<EventModel>();
     const [currentVenue, setCurrentVenue] = useState<Venue | undefined>()
+
+
+    const originalEvent = useAppSelector(selectFocusEvent);
+    const dispatch = useAppDispatch();
     useEffect(() => {
-        const _event = generateEvents(1)[ 0 ];
+        setSavedVenues([])
         if (id) {
-            _event._id = id;
-        }
-        setEvent(_event)
-        if (_event.venue.id) {
-            const _currentVenue = generateVenues(1, {id: _event.venue.id})[ 0 ];
-            _event.venue = {
-                name: _currentVenue.name,
-                street: _currentVenue.street,
-                city: _currentVenue.city,
-                country: _currentVenue.country,
-                district: _currentVenue.district,
-                saved: true,
-                id: _currentVenue.id,
-            }
-            setCurrentVenue(_currentVenue);
-            setSavedVenues([...generateVenues(faker.number.int(40), {}), _currentVenue])
-
-
-        } else {
-            setSavedVenues(generateVenues(faker.number.int(40), {}));
+            dispatch(fetchEventById(id))
         }
 
     }, [id])
+    useEffect(() => {
+        setEvent(originalEvent);
+    }, [originalEvent]);
+    useEffect(() => {
 
-    console.log(currentVenue, savedVenues);
+        // if (_event.venue.id) {
+        //     const _currentVenue = generateVenues(1, {id: _event.venue.id})[ 0 ];
+        //     _event.venue = {
+        //         name: _currentVenue.name,
+        //         street: _currentVenue.street,
+        //         city: _currentVenue.city,
+        //         country: _currentVenue.country,
+        //         district: _currentVenue.district,
+        //         saved: true,
+        //         id: _currentVenue.id,
+        //     }
+        //     setCurrentVenue(_currentVenue);
+        //     setSavedVenues([...generateVenues(faker.number.int(40), {}), _currentVenue])
+        //
+        //
+        // } else {
+        //     setSavedVenues(generateVenues(faker.number.int(40), {}));
+        // }
+
+    }, [id])
+
+
     if (!event) {
         return <div></div>
     }
@@ -70,7 +81,14 @@ export default function EditEventScreen() {
                         <Upload showUploadList={false}
                                 beforeUpload={(file) => setEvent({...event, cover: URL.createObjectURL(file)})}><Button
                             type={'default'} ghost>Change Cover</Button></Upload>
-                        <Button type={'primary'}>Save Changes</Button>
+                        <Button
+                            hidden={JSON.stringify(event).toLowerCase() === JSON.stringify(originalEvent).toLowerCase()}
+                            onClick={() => {
+                                setEvent(originalEvent);
+                            }} danger={true}>Reset</Button>
+                        <Button
+                            disabled={JSON.stringify(event).toLowerCase() === JSON.stringify(originalEvent).toLowerCase()}
+                            type={'primary'} onClick={() => dispatch(updateEventById({id:event._id, eventData: event}))}>Save Changes</Button>
                     </div>
                 </div>
                 <div className={'grid grid-cols-4 mt-4 gap-8 w-full'}>
@@ -94,7 +112,8 @@ export default function EditEventScreen() {
                     <div className={'col-span-3 grid grid-cols-3 gap-4'}>
                         <div>
                             <h4>Event Date</h4>
-                            <DatePicker format={'dddd MMM DD, YYYY '} className={inputCls} size={'large'}/>
+                            <DatePicker showTime format={'dddd MMM DD, YYYY '} className={inputCls}
+                                        value={dayjs(event.eventDate)} size={'large'}/>
                         </div>
                         <div className={'mt-3'}>
                             <h4 className={'text-gray-300 font-medium'}>Venue</h4>
@@ -124,19 +143,26 @@ export default function EditEventScreen() {
                         </div>
                         <div>
                             <h4 className={'text-gray-300 font-medium'}>End Ticket Sales</h4>
-                            <div><DatePicker format={'dddd MMM DD, YYYY '} className={inputCls} size={'large'}/></div>
+                            <div><DatePicker showTime format={'dddd MMM DD, YYYY '} className={inputCls}
+                                             value={dayjs(event.endSalesDate)} size={'large'} onChange={(value) => {
+                                                 setEvent({
+                                                     ...event,
+                                                     endSalesDate: value.toDate(),
+                                                 });
+                            }}/></div>
                         </div>
                         <div>
                             <h4 className={'text-gray-300 font-medium'}>Minimum Age</h4>
-                            <Input className={inputCls} type={'number'} min={0} placeholder={'18'}/>
+                            <Input className={inputCls} onChange={(value) => setEvent({...event, minAge:parseInt(value.target.value)})} type={'number'} min={0} placeholder={'18'}/>
                         </div>
                         <div>
                             <h4 className={'text-gray-300 font-medium'}>Dress Code</h4>
-                            <Input className={inputCls} placeholder={'Casual'}/>
+                            <Input className={inputCls} placeholder={'Casual'} onChange={(value) => setEvent({...event, dress: value.target.value})}/>
                         </div>
                         <div>
                             <h4 className={'text-gray-300 font-medium'}>Entry Closing</h4>
-                            <TimePicker size={'large'} format={'HH:mm'} className={inputCls}/>
+                            <TimePicker size={'large'} format={'HH:mm'} value={dayjs(event.lastEntry)}
+                                        className={inputCls} onChange={(value) => {setEvent({...event, lastEntry: value.format('HH:mm')})}}/>
                         </div>
                     </div>
                 </div>
@@ -145,7 +171,7 @@ export default function EditEventScreen() {
         <div className={'grid grid-cols-2 gap-8 p-4'}>
             <div className={'bg-white rounded-lg p-4'}>
                 <h2 className={'text-xl font-semibold mb-2'}>Description</h2>
-                <Textarea className={inputCls + ' h-[calc(100%-46px)]'}/>
+                <Textarea value={event.description} onChange={(value) => setEvent({...event, description: value.target.value})} className={inputCls + ' h-[calc(100%-46px)]'}/>
             </div>
             <div className={'bg-white rounded-xl p-4 space-y-4'}>
                 <h2 className={'text-xl font-semibold'}>Venue</h2>
@@ -218,26 +244,64 @@ export default function EditEventScreen() {
 
                 </div>
 
-                {isNewVenue && (
+                {(isNewVenue || !event.venue.saved) && (
                     <>
                         <div>
                             <label className={'block font-semibold'} htmlFor="venue.name">Venue Name</label>
-                            <Input className={inputCls} name="venue.name" placeholder="Enter Venue Name"/>
+                            <Input className={inputCls} name="venue.name" value={event.venue.name}
+                                   onChange={(value) => setEvent({
+                                       ...event,
+                                       venue: {...event.venue, name: value.target.value,}
+                                   })}
+                                   placeholder="Enter Venue Name"/>
                             {/*<ErrorMessage name="venue.name" component="div" className="text-red-500"/>*/}
                         </div>
                         <div>
                             <label className={'block font-semibold'} htmlFor="venue.street">Street</label>
-                            <Input className={inputCls} name="venue.street" placeholder="Enter Street"/>
+                            <Input className={inputCls} name="venue.street" value={event.venue.street}
+                                   onChange={(value) => setEvent({
+                                       ...event,
+                                       venue: {...event.venue, street: value.target.value,}
+                                   })}
+                                   placeholder="Enter Street"/>
+                            {/*<ErrorMessage name="venue.street" component="div" className="text-red-500"/>*/}
+                        </div>
+                        <div>
+                            <label className={'block font-semibold'} htmlFor="venue.street">District</label>
+                            <Input className={inputCls} name="venue.distict" value={event.venue.street}
+                                   onChange={(value) => setEvent({
+                                       ...event,
+                                       venue: {...event.venue, district: value.target.value,}
+                                   })}
+                                   placeholder="Enter District"/>
                             {/*<ErrorMessage name="venue.street" component="div" className="text-red-500"/>*/}
                         </div>
                         <div>
                             <label className={'block font-semibold'} htmlFor="venue.city">City</label>
-                            <Input className={inputCls} name="venue.city" placeholder="Enter City"/>
+                            <Input className={inputCls} name="venue.city" value={event.venue.city}
+                                   onChange={(value) => setEvent({
+                                       ...event,
+                                       venue: {...event.venue, city: value.target.value,}
+                                   })}
+                                   placeholder="Enter City"/>
                             {/*<ErrorMessage name="venue.city" component="div" className="text-red-500"/>*/}
                         </div>
                         <div>
                             <label className={'block font-semibold'} htmlFor="venue.country">Country</label>
-                            <Input className={inputCls} name="venue.country" placeholder="Enter Country"/>
+                            <Select  className={inputCls}
+                                    onChange={(e) => {
+                                        setEvent({
+                                            ...event,
+                                            country: countries[ e.target.value ].name,
+                                            currency: countries[ e.target.value ].currencies[ 0 ],
+                                            venue: {...event.venue, country: countries[ e.target.value ].name,}
+                                        })
+                                    }}>
+                                <option value={'GH'}>{countries[ 'GH' ].name}</option>
+                                <option value={'KE'}>{countries[ 'KE' ].name}</option>
+
+                            </Select>
+
                             {/*<ErrorMessage name="venue.country" component="div" className="text-red-500"/>*/}
                         </div>
                     </>

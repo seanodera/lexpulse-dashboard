@@ -49,6 +49,7 @@ const CreateEventScreen = () => {
     });
     const user = localStorage.getItem('user');
     const initialValues: EventModel = {
+        image: [], revenue: 0, ticketSales: 0, viewCount: 0, weightedRating: 0,
         eventHostId: user ? JSON.parse(user).id : '',
         eventName: '',
         poster: '',
@@ -278,7 +279,7 @@ const CreateEventScreen = () => {
                                     <h4 className={'text-sm'}>MultiDay</h4>
                                     <Switch value={multiDay} onChange={(value) => setMultiDay(value)}/>
                                 </div>
-                                {multiDay ? <DatePicker format={'dddd MMM DD, YYYY'} className={inputCls}
+                                {multiDay ? <DatePicker showTime format={'dddd MMM DD, YYYY'} className={inputCls}
                                                         onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/> :
                                     <TimePicker format={'HH:mm'} className={inputCls}
                                                 onChange={(value) => setFieldValue('eventEnd', format(value.toString(), 'HH:mm'))}/>}
@@ -292,9 +293,9 @@ const CreateEventScreen = () => {
                                     <h4 className={'text-sm'}>Start Immediately</h4>
                                     <Switch value={immediate} onChange={(value) => setImmediate(value)}/>
                                 </div>
-                                <DatePicker
+                                <DatePicker showTime
                                     disabled={immediate}
-                                    format={'dddd MMM DD, YYYY'}
+                                    format={'dddd MMM DD, YYYY,  HH:mm'}
                                     className={inputCls}
                                     onChange={(value) => setFieldValue('startSalesDate', new Date(value.toString()))}
                                 />
@@ -304,9 +305,9 @@ const CreateEventScreen = () => {
                                 <div className={'flex justify-between my-1'}><h4 className={'text-sm'}>When Event
                                     starts</h4> <Switch
                                     value={eventStart} onChange={(value) => setEventStart(value)}/></div>
-                                <DatePicker
+                                <DatePicker showTime
                                     disabled={eventStart}
-                                    format={'dddd MMM DD, YYYY'}
+                                    format={'dddd MMM DD, YYYY, HH:mm'}
                                     className={inputCls}
                                     onChange={(value) => setFieldValue('endTicketSales', new Date(value.toString()))}
                                 />
@@ -397,8 +398,8 @@ const CreateEventScreen = () => {
                                                 <div>
                                                     <h3 className={'font-semibold'}>Sales End</h3>
                                                     <div className={'flex justify-between mb-1'}><h4
-                                                        className={'text-sm'}>Global</h4> <Switch/></div>
-                                                    <DatePicker format={'dddd MMM DD, YYYY'}
+                                                        className={'text-sm'}>Global</h4> <Switch /></div>
+                                                    <DatePicker showTime format={'dddd MMM DD, YYYY,  HH:mm'}
                                                                 className={inputCls}/>
                                                 </div>
                                             </fieldset>

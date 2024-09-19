@@ -62,21 +62,3 @@ export default function LoginPage() {
 }
 
 
-// {/* Toggle Button */}
-// <div className={'absolute inset-x-0 bottom-10 flex justify-center'}>
-//     {isLogin ? (
-//         <>
-//             <p className={'text-sm text-gray-300'}>Don&apos;t have an account?</p>
-//             <Button onClick={() => setIsLogin(false)} block type={'primary'} size={'large'} ghost>
-//                 Create An Account
-//             </Button>
-//         </>
-//     ) : (
-//         <>
-//             <p className={'text-sm text-gray-300'}>Already have an account?</p>
-//             <Button onClick={() => setIsLogin(true)} block type={'primary'} size={'large'} ghost>
-//                 Back to Login
-//             </Button>
-//         </>
-//     )}
-// </div>

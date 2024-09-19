@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import EventReducer from './data/slices/EventSlice';
+import transactionReducer from './data/slices/transactionSlice';
 
 const store = configureStore({
     reducer: {
         events: EventReducer,
+        transaction: transactionReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

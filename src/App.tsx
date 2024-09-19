@@ -12,6 +12,7 @@ import EditEventScreen from "./screens/editEvent";
 import {fetchEvents} from "./data/slices/EventSlice";
 import {useAppDispatch} from "./hooks/hooks";
 import LoginPage from "./screens/login";
+import {fetchTransactions} from "./data/slices/transactionSlice.ts";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -60,10 +61,11 @@ function App() {
         if (token && user) {
 
             dispatch(fetchEvents(JSON.parse(user).id));
+            dispatch(fetchTransactions(JSON.parse(user).id))
         } else {
             navigate('/login');
         }
-    }, [token, dispatch, navigate, user]);
+    }, [token, user]);
 
     return (
         <ConfigProvider theme={isDarkMode ? darkTheme : lightTheme}>

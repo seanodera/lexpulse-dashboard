@@ -1,6 +1,5 @@
 import {addHours, format} from "date-fns";
 import {Dropdown, Tag} from "antd";
-import CountDown from "./countDown";
 import {EventModel} from "../../data/types.ts";
 import {
     CloseCircleOutlined,
@@ -91,7 +90,7 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                     </div>
                     <div>
                         <h4 className={'text-gray-300 font-medium'}>Ticket Sales Closing</h4>
-                        <div><CountDown date={event.eventDate}/></div>
+                        <div>{format(event.endSalesDate? event.endSalesDate : event.eventDate,'EEE dd MMM YYY, HH:mm')}</div>
                     </div>
                     <div>
                         <h4 className={'text-gray-300'}>minimum Age</h4>
