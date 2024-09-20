@@ -125,6 +125,7 @@ export interface EventModel {
         id?: string;
     };
     revenue: number,
+    scanners: Scanner[],
 }
 
 export interface Ticket {
@@ -134,8 +135,8 @@ export interface Ticket {
     ticketsAvailable: number;
     ticketsLeft: number;
     sold: number;
-    saleEnd?: Date; // Optional
-    saleStart?: Date; // Optional
+    saleEnd?: Date | string; // Optional
+    saleStart?: Date | string; // Optional
 }
 
 export interface Discount {
@@ -211,10 +212,21 @@ export interface Transaction {
     eventId: string;
     hostId: string;
     attendeeId: string;
-    user?:any;
+    user?: {
+        [ key: string ]: string;
+    }
     amount: number;
     status: 'PENDING' | 'SUCCESS' | 'FAILED';
     createdAt?: Date;
     updatedAt?: Date;
     cumulativeRevenue: number | 0;
 }
+
+export type Scanner = {
+    _id:string,
+    eventId: string,
+    email: string,
+    activated: boolean,
+    name: string,
+    scannedTickets: number,
+};

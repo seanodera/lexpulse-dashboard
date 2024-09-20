@@ -58,7 +58,8 @@ export function generateEvents(count: number): EventModel[] {
             viewCount: 0,
             weightedRating: 0,
             ticketSales: 0,
-            revenue: 0
+            revenue: 0,
+            scanners: []
         };
 
         events.push(event);

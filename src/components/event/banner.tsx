@@ -4,7 +4,6 @@ import {EventModel} from "../../data/types.ts";
 import {
     CloseCircleOutlined,
     FileTextOutlined,
-    SettingOutlined,
     ShareAltOutlined,
     UserSwitchOutlined
 } from "@ant-design/icons";
@@ -38,11 +37,11 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                                     label: 'GuestList',
                                     icon: <UserSwitchOutlined/>
                                 },
-                                {
-                                    key: 2,
-                                    label: 'Manage Scanners',
-                                    icon: <SettingOutlined/>
-                                },
+                                // {
+                                //     key: 2,
+                                //     label: 'Manage Scanners',
+                                //     icon: <SettingOutlined/>
+                                // },
                                 {
                                     key: 3,
                                     label: 'Get Report',

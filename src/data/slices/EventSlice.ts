@@ -1,7 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store.ts";
-import { EventModel } from "../types.ts";
-import { getEvents, addEvent, getEvent, updateEvent, deleteEvent } from "../eventData.ts";
+import { EventModel, Scanner } from "../types.ts";
+import {
+    getEvents,
+    addEvent,
+    getEvent,
+    updateEvent,
+    deleteEvent,
+    addScanner,
+    deleteScanner,
+} from "../eventData.ts";
+
 
 // Fetch events from API
 export const fetchEvents = createAsyncThunk('events/fetch', async (id: string, { rejectWithValue }) => {
@@ -18,15 +27,15 @@ export const fetchEvents = createAsyncThunk('events/fetch', async (id: string, {
 });
 
 // Fetch a single event by ID
-export const fetchEventById = createAsyncThunk('events/fetchById', async (id: string, { rejectWithValue,getState }) => {
+export const fetchEventById = createAsyncThunk('events/fetchById', async (id: string, { rejectWithValue, getState }) => {
     try {
-        const {events} = getState() as RootState;
+        const { events } = getState() as RootState;
         let event = events.events.find(e => e._id === id);
         if (!event) {
             const response = await getEvent(id);
             event = response.data.event;
         }
-       return event;
+        return event;
     } catch (error: unknown) {
         if (error instanceof Error) {
             return rejectWithValue(error.message);
@@ -39,9 +48,7 @@ export const fetchEventById = createAsyncThunk('events/fetchById', async (id: st
 // Create a new event
 export const createEvent = createAsyncThunk('events/create', async (event: EventModel, { rejectWithValue }) => {
     try {
-        console.log(event);
         const response = await addEvent(event);
-        console.log(response);
         return response.data;
     } catch (error: unknown) {
         if (error instanceof Error) {
@@ -80,6 +87,33 @@ export const deleteEventById = createAsyncThunk('events/delete', async (id: stri
     }
 });
 
+// Add a new scanner
+export const createScanner = createAsyncThunk('scanners/create', async (scanner: Scanner, { rejectWithValue }) => {
+    try {
+        const response = await addScanner(scanner);
+        return response.data.data;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error creating scanner');
+        }
+    }
+});
+
+// Delete a scanner by ID
+export const deleteScannerById = createAsyncThunk('scanners/delete', async (scannerId: string, { rejectWithValue }) => {
+    try {
+       await deleteScanner(scannerId);
+        return scannerId;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error deleting scanner');
+        }
+    }
+});
 
 // Event slice state
 interface EventState {
@@ -124,7 +158,7 @@ const EventSlice = createSlice({
                 state.fetchError = action.payload as string;
             })
 
-            // Create event
+            // Create new event
             .addCase(createEvent.fulfilled, (state, action) => {
                 state.events.push(action.payload);
             })
@@ -132,9 +166,9 @@ const EventSlice = createSlice({
                 state.fetchError = action.payload as string;
             })
 
-            // Update event
+            // Update event by ID
             .addCase(updateEventById.fulfilled, (state, action) => {
-                const index = state.events.findIndex(e => e._id === action.payload._id);
+                const index = state.events.findIndex(event => event._id === action.payload._id);
                 if (index !== -1) {
                     state.events[index] = action.payload;
                 }
@@ -143,11 +177,43 @@ const EventSlice = createSlice({
                 state.fetchError = action.payload as string;
             })
 
-            // Delete event
+            // Delete event by ID
             .addCase(deleteEventById.fulfilled, (state, action) => {
-                state.events = state.events.filter(event => event._id !== action.meta.arg);
+                state.events = state.events.filter(event => event._id !== action.payload.id);
             })
             .addCase(deleteEventById.rejected, (state, action) => {
+                state.fetchError = action.payload as string;
+            })
+
+            // Create scanner
+            .addCase(createScanner.fulfilled, (state, action) => {
+                const eventIndex = state.events.findIndex((v) => v._id === action.payload.eventId)
+                if (eventIndex !== -1){
+                    state.events[eventIndex].scanners.push(action.payload);
+                }
+                if (state.focusEvent) {
+                    state.focusEvent.scanners.push(action.payload);
+                }
+            })
+            .addCase(createScanner.rejected, (state, action) => {
+                state.fetchError = action.payload as string;
+            })
+
+            // Delete scanner by ID
+            .addCase(deleteScannerById.fulfilled, (state, action) => {
+
+                if (state.focusEvent) {
+                    const eventIndex = state.events.findIndex((v) => v._id === state.focusEvent!._id);
+                    if (eventIndex !== -1) {
+                        const index = state.focusEvent.scanners.findIndex((v) => v._id === action.payload);
+                        if (index !== -1) {
+                            state.focusEvent.scanners.splice(index, 1);
+                        }
+                        state.focusEvent = state.events[eventIndex];
+                    }
+                }
+            })
+            .addCase(deleteScannerById.rejected, (state, action) => {
                 state.fetchError = action.payload as string;
             });
     },

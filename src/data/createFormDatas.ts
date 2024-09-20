@@ -29,10 +29,10 @@ export async function createEventModelFormData(event: EventModel) {
         formData.append(`ticketInfo[${index}][ticketsLeft]`, ticket.ticketsAvailable.toString());
         formData.append(`ticketInfo[${index}][sold]`, ticket.sold.toString());
         if (ticket.saleEnd) {
-            formData.append(`tickets[${index}][saleEnd]`, ticket.saleEnd.toISOString());
+            formData.append(`tickets[${index}][saleEnd]`, (ticket.saleEnd instanceof Date)? ticket.saleEnd.toISOString() : ticket.saleEnd);
         }
-        if (ticket.saleStart) {
-            formData.append(`tickets[${index}][saleStart]`, ticket.saleStart.toISOString());
+        if (ticket.saleStart ) {
+            formData.append(`tickets[${index}][saleStart]`, (ticket.saleStart instanceof Date)? ticket.saleStart.toISOString() : ticket.saleStart);
         }
     });
 

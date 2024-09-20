@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {EventModel} from "./types.ts";
+import {EventModel, Scanner} from "./types.ts";
 import {createEventModelFormData} from "./createFormDatas.ts";
 import {common} from "./utils.ts";
 
@@ -79,3 +79,31 @@ export const deleteEvent = async (id: string) => {
         throw error;
     }
 };
+
+
+export const addScanner = async (scanner: Scanner) => {
+    try {
+        const response = await axios.post(`${baseUrl}/api/v1/scanners/create`, scanner, getConfig());
+        return response;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 403) {
+            localStorage.removeItem('token'); // Clear token from localStorage
+        }
+        throw error;
+    }
+};
+
+
+export const deleteScanner = async (scannerId: string) => {
+    try {
+        const response = await axios.delete(`${baseUrl}/api/v1/scanners/${scannerId}`, getConfig());
+        return response;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 403) {
+            localStorage.removeItem('token'); // Clear token from localStorage
+        }
+        throw error;
+    }
+};
+
+

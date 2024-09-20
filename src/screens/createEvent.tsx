@@ -76,7 +76,8 @@ const CreateEventScreen = () => {
         eventEnd: '',
         country: 'Ghana',
         currency: 'GHS',
-        approved: false
+        approved: false,
+        scanners:[]
     };
 
     const handleImageUpload = (file: RcFile, setFieldValue: (field: string, value: string, shouldValidate?: boolean) => Promise<void | FormikErrors<EventModel>>, fieldName: string) => {
@@ -369,7 +370,7 @@ const CreateEventScreen = () => {
                                                     </Button>
                                                 </div>
                                                 <Field name={`ticketInfo[${index}].ticketType`}>
-                                                    {({field}: any) => (
+                                                    {({field}:{any}) => (
                                                         <div>
                                                             <label className={'block font-semibold'}>Name</label>
                                                             <input {...field} placeholder="Ticket Name"
@@ -400,7 +401,7 @@ const CreateEventScreen = () => {
                                                     <div className={'flex justify-between mb-1'}><h4
                                                         className={'text-sm'}>Global</h4> <Switch /></div>
                                                     <DatePicker showTime format={'dddd MMM DD, YYYY,  HH:mm'}
-                                                                className={inputCls}/>
+                                                                className={inputCls} onChange={(value) => setFieldValue(`ticketInfo[${index}].salesEnd`,value.toString())}/>
                                                 </div>
                                             </fieldset>
                                         );
