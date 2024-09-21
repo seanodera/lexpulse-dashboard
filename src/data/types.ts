@@ -230,3 +230,20 @@ export type Scanner = {
     name: string,
     scannedTickets: number,
 };
+
+export interface User {
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    organization?: string;
+    gender?: string;
+    phone?: number;
+    country: string;
+    activatedEmail?: boolean;
+    activatedPhone?: boolean;
+    userType: string;
+    image?: string[];
+    accountActive?: boolean;
+    createdAt?: Date;
+}
