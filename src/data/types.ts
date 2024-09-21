@@ -247,3 +247,13 @@ export interface User {
     accountActive?: boolean;
     createdAt?: Date;
 }
+
+export interface WithdrawalAccount {
+    account_number: string;
+    bank_code: string;
+    amount: number;
+    currency: string;
+    account_name?: string;
+    description?: string;
+    reference?: string;
+}
