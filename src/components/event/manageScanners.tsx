@@ -12,8 +12,10 @@ export default function ManageScanners({event}: { event: EventModel }) {
     const [email, setEmail] = useState<string>('');
     const dispatch = useAppDispatch();
     useEffect(() => {
+        if (event.scanners){
         setScanners(event.scanners)
-    }, [event.scanners]);
+        }
+    }, [event]);
     
     const addScanner = (e: React.FormEvent) => {
         e.preventDefault();
