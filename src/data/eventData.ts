@@ -81,7 +81,7 @@ export const deleteEvent = async (id: string) => {
 };
 
 
-export const addScanner = async (scanner: Scanner) => {
+export const addScanner = async (scanner: Partial<Scanner>) => {
     try {
         const response = await axios.post(`${baseUrl}/api/v1/scanners/create`, scanner, getConfig());
         return response;

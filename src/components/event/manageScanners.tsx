@@ -1,14 +1,20 @@
 import {EventModel, Scanner} from "../../data/types.ts";
 import {Field, Fieldset, Input, Label} from "@headlessui/react";
 import {Button, Card} from "antd";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {useAppDispatch} from "../../hooks/hooks.ts";
+import {createScanner, deleteScannerById} from "../../data/slices/EventSlice.ts";
 
 export default function ManageScanners({event}: { event: EventModel }) {
     const inputCls = 'block border-solid border-gray-500 placeholder-gray-300 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary text-current w-full';
     const [scanners, setScanners] = useState<Array<Scanner | Partial<Scanner>>>([]);
     const [name, setName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
-
+    const dispatch = useAppDispatch();
+    useEffect(() => {
+        setScanners(event.scanners)
+    }, [event.scanners]);
+    
     const addScanner = (e: React.FormEvent) => {
         e.preventDefault();
         const newScanner = {
@@ -19,13 +25,19 @@ export default function ManageScanners({event}: { event: EventModel }) {
             name,
             scannedTickets: 0,
         };
+        dispatch(createScanner(newScanner));
         setScanners([...scanners, newScanner]);
         setName('');
         setEmail('');
+        
     };
 
-    const removeScanner = (index: number) => {
-        const updatedScanners = scanners.filter((_, i) => i !== index);
+    const removeScanner = (scanner: Partial<Scanner>) => {
+        
+        if (scanner._id){
+            dispatch(deleteScannerById(scanner._id))
+        }
+        const updatedScanners = scanners.filter((v) => v.email !== scanner.email);
         setScanners(updatedScanners);
     }
 
@@ -64,7 +76,7 @@ export default function ManageScanners({event}: { event: EventModel }) {
                     <div key={index} className={'rounded-lg shadow bg-white p-4'}>
                         <div className={'flex items-center justify-end'}>
 
-                            <Button danger onClick={() => removeScanner(index)}>Remove</Button>
+                            <Button danger onClick={() => removeScanner(scanner)}>Remove</Button>
                         </div>
                         <div>
                             <div>

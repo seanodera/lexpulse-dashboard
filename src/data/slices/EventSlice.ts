@@ -88,7 +88,7 @@ export const deleteEventById = createAsyncThunk('events/delete', async (id: stri
 });
 
 // Add a new scanner
-export const createScanner = createAsyncThunk('scanners/create', async (scanner: Scanner, { rejectWithValue }) => {
+export const createScanner = createAsyncThunk('scanners/create', async (scanner: Partial<Scanner>, { rejectWithValue }) => {
     try {
         const response = await addScanner(scanner);
         return response.data.data;
