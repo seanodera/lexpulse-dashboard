@@ -76,6 +76,7 @@ export default function Sidebar() {
                         key: '/logout',
                         icon: <LogoutOutlined/>,
                         label: 'Logout',
+                        onClick: () => {}
                     },
                 ]}
             />

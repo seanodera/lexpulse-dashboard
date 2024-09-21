@@ -379,7 +379,7 @@ const CreateEventScreen = () => {
                                                     )}
                                                 </Field>
                                                 <Field name={`ticketInfo[${index}].price`}>
-                                                    {({field}: any) => (
+                                                    {({field}: { any }) => (
                                                         <div>
                                                             <label className={'block font-semibold'}>Price</label>
                                                             <input {...field} type="number" placeholder="Price"

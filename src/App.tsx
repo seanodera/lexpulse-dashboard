@@ -13,6 +13,9 @@ import {fetchEvents} from "./data/slices/EventSlice";
 import {useAppDispatch} from "./hooks/hooks";
 import LoginPage from "./screens/login";
 import {fetchTransactions} from "./data/slices/transactionSlice.ts";
+import SettingsPage from "./screens/settings.tsx";
+import PayoutsPage from "./screens/payouts.tsx";
+import SalesReport from "./screens/reports.tsx";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -74,6 +77,9 @@ function App() {
                 <Route element={<MainShell />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/create-event" element={<CreateEventScreen />} />
+                    <Route path="/sales-reports" element={<SalesReport />} />
+                    <Route path="/payouts" element={<PayoutsPage />} />
+                    <Route path="/settings" element={<SettingsPage/>} />
                     <Route path="/manage-events" element={<ManageEvent />} />
                     <Route path="/manage-events/:id" element={<SingleEventScreen />} />
                     <Route path="/manage-events/:id/edit" element={<EditEventScreen />} />
