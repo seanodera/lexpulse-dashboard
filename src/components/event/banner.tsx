@@ -9,9 +9,12 @@ import {
 } from "@ant-design/icons";
 
 import {Link} from "react-router-dom";
+import {deleteEventById} from "../../data/slices/EventSlice.ts";
+import {useAppDispatch} from "../../hooks/hooks.ts";
+
 
 export default function SingleEventBanner({event}: { event: EventModel }) {
-
+    const dispatch = useAppDispatch();
     return <div className={'bg-cover bg-center bg-no-repeat shadow'} style={{
         backgroundImage: `url("${event.cover}")`
     }}>
@@ -52,6 +55,7 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                                     label: 'Cancel Event',
                                     icon: <CloseCircleOutlined/>,
                                     danger: true,
+                                    onClick: () => dispatch(deleteEventById(event._id))
                                 }
                             ]
                         }}>
