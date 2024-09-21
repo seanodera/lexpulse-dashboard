@@ -370,7 +370,7 @@ const CreateEventScreen = () => {
                                                     </Button>
                                                 </div>
                                                 <Field name={`ticketInfo[${index}].ticketType`}>
-                                                    {({field}:{any}) => (
+                                                    {({field}:any) => (
                                                         <div>
                                                             <label className={'block font-semibold'}>Name</label>
                                                             <input {...field} placeholder="Ticket Name"
@@ -379,7 +379,7 @@ const CreateEventScreen = () => {
                                                     )}
                                                 </Field>
                                                 <Field name={`ticketInfo[${index}].price`}>
-                                                    {({field}: { any }) => (
+                                                    {({field}: any ) => (
                                                         <div>
                                                             <label className={'block font-semibold'}>Price</label>
                                                             <input {...field} type="number" placeholder="Price"
