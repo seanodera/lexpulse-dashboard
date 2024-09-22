@@ -149,7 +149,7 @@ export interface Discount {
 }
 
 export interface Venue {
-    id: string;
+    _id: string;
     name: string;
     street: string;
     city: string;
@@ -157,13 +157,15 @@ export interface Venue {
     country: string;
     links: { name: string, url: string }[];
     followers: number;
-    cover: string;
+    images: string[];
     capacity: number;
     type: VenueType;
     yearEvents: number | 0;
     description?: string;
     phone: string;
     email: string;
+    poster: string;
+    userId: string;
 }
 
 export interface CartItem {
@@ -232,6 +234,7 @@ export type Scanner = {
 };
 
 export interface User {
+    id:string
     firstName: string;
     lastName: string;
     email: string;

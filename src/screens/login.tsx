@@ -2,7 +2,7 @@ import {Button} from "antd";
 import {CloseOutlined} from "@ant-design/icons";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useState} from "react";
-import {SignInComponent} from "../signInComponent.tsx";
+import {SignInComponent} from "../components/signInComponent.tsx";
 import {SignUpComponent} from "../components/SignUpComponent.tsx";
 
 

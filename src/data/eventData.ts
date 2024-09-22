@@ -2,11 +2,13 @@ import axios from 'axios';
 import {EventModel, Scanner} from "./types.ts";
 import {createEventModelFormData} from "./createFormDatas.ts";
 import {common} from "./utils.ts";
+import Cookies from "js-cookie";
+import {clearAuthCookies} from "./slices/authSlice.ts";
 
 const baseUrl = common.baseUrl;
 
 export const getConfig = () => {
-    const token = localStorage.getItem('token');
+    const token = Cookies.get('token');
     console.log(baseUrl)
     return {
         headers: {
@@ -23,7 +25,7 @@ export const getEvents = async (id:string) => {
         return response;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }
@@ -35,7 +37,7 @@ export const getEvent = async (id: string) => {
         return response;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }
@@ -50,7 +52,7 @@ export const addEvent = async (event: EventModel) => {
     }  catch (error) {
         console.error(error);
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }
@@ -62,7 +64,7 @@ export const updateEvent = async (id: string, eventData: Partial<EventModel>) =>
         return response;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }
@@ -74,7 +76,7 @@ export const deleteEvent = async (id: string) => {
         return response;
     }  catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }
@@ -87,7 +89,7 @@ export const addScanner = async (scanner: Partial<Scanner>) => {
         return response;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }
@@ -100,7 +102,7 @@ export const deleteScanner = async (scannerId: string) => {
         return response;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 403) {
-            localStorage.removeItem('token'); // Clear token from localStorage
+            clearAuthCookies();
         }
         throw error;
     }

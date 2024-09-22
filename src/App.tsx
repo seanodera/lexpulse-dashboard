@@ -10,12 +10,16 @@ import ManageEvent from "./screens/manageEvent";
 import SingleEventScreen from "./screens/singleEvent";
 import EditEventScreen from "./screens/editEvent";
 import {fetchEvents} from "./data/slices/EventSlice";
-import {useAppDispatch} from "./hooks/hooks";
+import {useAppDispatch, useAppSelector} from "./hooks/hooks";
 import LoginPage from "./screens/login";
 import {fetchTransactions} from "./data/slices/transactionSlice.ts";
 import SettingsPage from "./screens/settings.tsx";
 import PayoutsPage from "./screens/payouts.tsx";
 import SalesReport from "./screens/reports.tsx";
+import {checkUser, selectCurrentUser, selectToken} from "./data/slices/authSlice.ts";
+import ManageVenueScreen from "./screens/manageVenue.tsx";
+import CreateVenueScreen from "./screens/createVenue.tsx";
+import {fetchUserVenues} from "./data/slices/venueSlice.ts";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -58,13 +62,16 @@ function App() {
         },
     };
 
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    useEffect(() => {
+        dispatch(checkUser());
+    }, []);
+    const token = useAppSelector(selectToken);
+    const user = useAppSelector(selectCurrentUser);
     useEffect(() => {
         if (token && user) {
-
-            dispatch(fetchEvents(JSON.parse(user).id));
-            dispatch(fetchTransactions(JSON.parse(user).id))
+            dispatch(fetchEvents(user.id));
+            dispatch(fetchTransactions(user.id))
+            dispatch(fetchUserVenues(user.id))
         } else {
             navigate('/login');
         }
@@ -80,6 +87,8 @@ function App() {
                     <Route path="/sales-reports" element={<SalesReport />} />
                     <Route path="/payouts" element={<PayoutsPage />} />
                     <Route path="/settings" element={<SettingsPage/>} />
+                    <Route path="/manage-venue" element={<ManageVenueScreen />} />
+                    <Route path="/create-venue" element={<CreateVenueScreen />} />
                     <Route path="/manage-events" element={<ManageEvent />} />
                     <Route path="/manage-events/:id" element={<SingleEventScreen />} />
                     <Route path="/manage-events/:id/edit" element={<EditEventScreen />} />

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Button } from 'antd';
-import { Field, Fieldset, Input, Label } from '@headlessui/react';
-import {signUpHost} from "../data/userData.ts";
+import React, {useState} from 'react';
+import {Button} from 'antd';
+import {Field, Fieldset, Input, Label} from '@headlessui/react';
 import {useNavigate} from "react-router-dom";
+import {useAppDispatch} from "../hooks/hooks.ts";
+import {signUpHost} from "../data/slices/authSlice.ts";
 
 
 export function SignUpComponent() {
@@ -14,7 +15,7 @@ export function SignUpComponent() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
-
+    const dispatch = useAppDispatch();
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault(); // Prevent the default form submission behavior
         setError(null); // Reset the error state
@@ -27,16 +28,16 @@ export function SignUpComponent() {
 
         // Attempt to sign up the user
         try {
-            const result = await signUpHost({ firstName, lastName, email, pass: password });
-            if (result?.success) {
+
+            const result = await dispatch(signUpHost({firstName, lastName, email, password}));
+            if (result.meta.requestStatus === 'fulfilled') {
                 console.log("User signed up successfully");
                 navigate('/');
-            } else {
-                setError(result?.message || "Sign up failed");
             }
+            navigate('/');
         } catch (err) {
             console.error(err);
-            setError( "An error occurred");
+            setError("An error occurred");
         }
     };
 

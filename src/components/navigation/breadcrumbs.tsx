@@ -5,7 +5,7 @@ import {Link, useLocation} from "react-router-dom";
 import {useAppSelector} from "../../hooks/hooks.ts";
 import {selectFocusEvent} from "../../data/slices/EventSlice.ts";
 import {RightOutlined} from "@ant-design/icons";
-
+import _ from "lodash";
 
 const Breadcrumbs: React.FC = () => {
     const pathname = useLocation().pathname;
@@ -68,7 +68,7 @@ const Breadcrumbs: React.FC = () => {
 
     return (
         <div>
-            <h2 className={'text-white text-xl font-semibold mb-0 capitalize'}>{currentPath}</h2>
+            <h2 className={'text-white text-xl font-semibold mb-0 capitalize'}>{_.startCase(currentPath)}</h2>
             <Breadcrumb className="items-center text-white" separator={<RightOutlined className={'text-primary'}/>} items={items}/>
         </div>
     );

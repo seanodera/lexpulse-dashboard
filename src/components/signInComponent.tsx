@@ -1,23 +1,22 @@
 import {Button} from "antd";
 import {Field, Fieldset, Input, Label} from "@headlessui/react";
 import {useState} from "react";
-import {SignInHost} from "./data/userData.ts";
+
 import {useNavigate} from "react-router-dom";
+import {useAppDispatch} from "../hooks/hooks.ts";
+import {signInHost} from "../data/slices/authSlice.ts";
 
 
 export function SignInComponent() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     function handleSubmit() {
-        SignInHost(email, password).then((result) => {
-            if (result?.status === 200) {
-
-                    navigate('/')
-
-            } else {
-                // Handle login error
+        dispatch(signInHost({email, password})).then((result) => {
+            if (result.meta.requestStatus === 'fulfilled') {
+                navigate('/')
             }
         });
     }

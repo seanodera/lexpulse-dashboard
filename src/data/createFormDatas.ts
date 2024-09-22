@@ -1,4 +1,6 @@
 import {EventModel} from './types';
+import {Venue} from './types.ts';
+
 import {createFile} from "./utils.ts";
 
 export async function createEventModelFormData(event: EventModel) {
@@ -84,5 +86,36 @@ export async function createEventModelFormData(event: EventModel) {
         formData.append('venue[id]', event.venue.id);
     }
     console.log(event,formData.get('country'))
+    return formData;
+}
+
+
+
+export async function createVenueFormData(venue: Partial<Venue>) {
+    const formData = new FormData();
+
+    // Process and append poster file
+    if (venue.poster) {
+        const poster = await createFile({ url: venue.poster, name: 'poster' });
+        formData.append('poster', poster);
+    }
+
+    // Process and append images array
+    if (venue.images && venue.images.length > 0) {
+        await Promise.all(venue.images.map(async (url, index) => {
+            const file = await createFile({ url, name: `image${index}` });
+            formData.append('images', file);
+        }));
+    }
+
+    for (const [key, value] of Object.entries(venue)) {
+        if (key !== 'poster' && key !== 'images' && value !== undefined) {
+            formData.append(key, value.toString());
+        }
+    }
+    formData.append('followers', '0');
+    formData.append('yearEvents','0');
+
+
     return formData;
 }

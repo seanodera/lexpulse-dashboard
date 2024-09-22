@@ -1,14 +1,17 @@
 import {Dropdown, Avatar} from 'antd';
 import {UserOutlined, SettingOutlined, LogoutOutlined} from '@ant-design/icons';
 import {useNavigate} from "react-router-dom";
+import {useAppDispatch, useAppSelector} from "../../hooks/hooks.ts";
+import {logout, selectCurrentUser} from "../../data/slices/authSlice.ts";
 
 const ProfileDropdown = () => {
-    const _user = localStorage.getItem('user');
+   const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    if (!_user) {
+    const user = useAppSelector(selectCurrentUser);
+    if (!user) {
         return <div></div>
     }
-    const user = JSON.parse(_user);
+
     return (
         <Dropdown  menu={{
             items: [
@@ -27,7 +30,7 @@ const ProfileDropdown = () => {
                     icon: <LogoutOutlined/>,
                     label: ' Logout',
                     onClick: () => {
-                        localStorage.clear();
+                        dispatch(logout())
                         navigate('/login');
                     },
                     danger:true

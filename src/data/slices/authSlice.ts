@@ -1,11 +1,13 @@
-// src/features/auth/authSlice.ts
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import axios, {AxiosError} from 'axios';
 import Cookies from 'js-cookie';
-import { User } from '../types.ts'; // Ensure the path to your User type is correct
 
-const baseUrl = import.meta.env.VITE_API_HOST_URL;
+import {common, getCountry} from "../utils.ts";
+
+import {User} from "../types.ts";
+import {redirect} from "react-router-dom";
+import {RootState} from "../../store.ts"; // Router for navigation in Vite.js
+
 
 interface AuthState {
     user: User | null;
@@ -21,198 +23,295 @@ const initialState: AuthState = {
     error: null,
 };
 
-interface SignInPayload {
-    email: string;
-    password: string;
-}
-
-interface SignUpPayload {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-}
-
-interface UpdateUserPayload {
-    id: string;
-    userData: Partial<User>;
-}
-
-interface ResetPasswordPayload {
-    email: string;
-}
-
-interface ChangePasswordPayload {
-    currentPassword: string;
-    newPassword: string;
-}
-
 // Utility functions for managing cookies
 const setAuthCookies = (token: string, user: User) => {
-    Cookies.set('token', token, { expires: 7 });
-    Cookies.set('user', JSON.stringify(user), { expires: 7 });
+    // Store cookies that expire in 7 days
+    Cookies.set('token', token, {expires: 7});
+    Cookies.set('user', JSON.stringify(user), {expires: 7});
 };
 
-const clearAuthCookies = () => {
+export const clearAuthCookies = () => {
     Cookies.remove('token');
     Cookies.remove('user');
 };
 
 // Thunk for signing in
-export const signInHost = createAsyncThunk<{ token: string; user: User }, SignInPayload>(
+export const signInHost = createAsyncThunk(
     'auth/signIn',
-    async ({ email, password }, { rejectWithValue }) => {
+    async ({email, password}:{ email: string; password: string }, {rejectWithValue}) => {
         try {
-            const raw = JSON.stringify({ email, password });
-            const config = { headers: { 'Content-Type': 'application/json' } };
+            const raw = JSON.stringify({email, password});
+            const config = {headers: {'Content-Type': 'application/json'}};
 
-            const res = await axios.post(`${baseUrl}/api/v1/auth`, raw, config);
+            const res = await axios.post(`${common.baseUrl}/api/v1/auth`, raw, config);
 
             if (res.status === 200) {
-                const { token, user } = res.data;
-                setAuthCookies(token, user);
-                return { token, user };
+                const {token, user} = res.data;
+                setAuthCookies(token, user); // Store in cookies
+                return {success: true, status: res.status, data: {token, user}};
             } else {
-                return rejectWithValue(res.data.msg);
+                return rejectWithValue({success: false, status: res.status, message: res.data.msg});
             }
-        } catch (e:any) {
-            return rejectWithValue(e.response?.data?.msg || 'Unknown error');
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 403) {
+                    clearAuthCookies();
+                    redirect('/login'); // Vite.js navigation
+                }
+                return rejectWithValue(error.response?.data?.msg);
+            } else {
+                return rejectWithValue('Failed to sign in');
+            }
         }
     }
 );
 
 // Thunk for signing up
-export const signUpHost = createAsyncThunk<{ token: string; user: User }, SignUpPayload>(
+export const signUpHost = createAsyncThunk(
     'auth/signUp',
-    async ({ firstName, lastName, email, password }, { dispatch, rejectWithValue }) => {
+    async ({firstName, lastName, email, password}: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string
+    }, {dispatch, rejectWithValue}) => {
         try {
+            const country = await getCountry();
+
             const formData = new FormData();
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
             formData.append('username', `${firstName}.${lastName}`);
             formData.append('email', email);
+            formData.append('country', country || '');
+            formData.append('gender', 'Unset');
             formData.append('password', password);
+            formData.append('userType', 'host');
+            // formData.append('image', image, 'profile.jpg');
 
-            const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+            const config = {headers: {'Content-Type': 'multipart/form-data'}};
 
-            const res = await axios.post(`${baseUrl}/api/v1/users`, formData, config);
+            const res = await axios.post(`${common.baseUrl}/api/v1/users`, formData, config);
 
             if (res.status === 200) {
-                const signInRes = await dispatch(signInHost({ email, password })).unwrap();
-                return signInRes;
+                // Auto sign-in after sign-up
+                return await dispatch(signInHost({email, password})).unwrap();
+            } else {
+                return rejectWithValue({success: false, status: res.status, message: res.data.msg});
+            }
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 403) {
+                    clearAuthCookies();
+                    redirect('/login');
+                }
+                return rejectWithValue(error.response?.data?.msg);
+            } else {
+                return rejectWithValue('Failed to sign up');
+            }
+        }
+    }
+);
+
+// Thunk for getting the user data
+export const fetchUser = createAsyncThunk(
+    'auth/fetchUser',
+    async (id:string, {rejectWithValue}) => {
+        try {
+            const token = Cookies.get('token');
+            if (!token) {
+                redirect('/login');
+                ;
+                return rejectWithValue('Unauthorized');
+            }
+
+            const config = {headers: {Authorization: `Bearer ${token}`}};
+
+            const res = await axios.get(`${common.baseUrl}/api/v1/users/${id}`, config);
+            if (res.status === 200) {
+                return res.data.data.user;
+
             } else {
                 return rejectWithValue(res.data.msg);
             }
-        } catch (e: any) {
-            return rejectWithValue(e.response?.data?.msg || 'Unknown error');
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 403) {
+                    clearAuthCookies();
+                    redirect('/login');
+                }
+                return rejectWithValue(error.response?.data?.msg);
+            } else {
+                return rejectWithValue('Failed to fetch user');
+            }
         }
     }
 );
 
-// Thunk for updating user
-export const updateUser = createAsyncThunk<User, UpdateUserPayload>(
+// Thunk for updating the user
+export const updateUser = createAsyncThunk(
     'auth/updateUser',
-    async ({ id, userData }, { rejectWithValue }) => {
+    async ({id, data}:{ id: string; data: Partial<User> }, {rejectWithValue}) => {
         try {
             const token = Cookies.get('token');
-            const config = { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
-
-            const res = await axios.put<User>(`${baseUrl}/api/v1/users/${id}`, userData, config);
-
-            if (res.status === 200) {
-                const updatedUser = res.data;
-                setAuthCookies(<string>token, updatedUser); // Update in cookies
-                return updatedUser;
-            } else {
-                return rejectWithValue(res.data);
+            if (!token) {
+                redirect('/login');
+                ;
+                return rejectWithValue('Unauthorized');
             }
-        } catch (e: any) {
-            return rejectWithValue(e.response?.data || 'Unknown error');
+
+            const config = {headers: {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'}};
+
+            const res = await axios.put(`${common.baseUrl}/api/v1/users/${id}`, data, config);
+            if (res.status === 200) {
+                return res.data.data.user;
+            } else {
+                return rejectWithValue(res.data.msg);
+            }
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 403) {
+                    clearAuthCookies();
+                    redirect('/login');
+                }
+                return rejectWithValue(error.response?.data?.msg);
+            } else {
+                return rejectWithValue('Failed to update user');
+            }
         }
     }
 );
 
-// Thunk for resetting password
-export const resetPassword = createAsyncThunk<void, ResetPasswordPayload>(
+// Thunk for resetting the password
+export const resetPassword = createAsyncThunk(
     'auth/resetPassword',
-    async ({ email }, { rejectWithValue }) => {
+    async ({email}:{ email: string }, {rejectWithValue}) => {
         try {
-            const raw = JSON.stringify({ email });
-            const config = { headers: { 'Content-Type': 'application/json' } };
+            const raw = JSON.stringify({email});
+            const config = {headers: {'Content-Type': 'application/json'}};
 
-            const res = await axios.post(`${baseUrl}/api/v1/auth/reset-password`, raw, config);
+            const res = await axios.post(`${common.baseUrl}/api/v1/auth/reset-password`, raw, config);
 
             if (res.status === 200) {
                 return res.data;
             } else {
-                return rejectWithValue(res.data);
+                return rejectWithValue({success: false, status: res.status, message: res.data.msg});
             }
-        } catch (e: any) {
-            return rejectWithValue(e.response?.data || 'Unknown error');
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 403) {
+                    clearAuthCookies();
+                    redirect('/login'); // Vite.js navigation
+                }
+                return rejectWithValue(error.response?.data?.msg);
+            } else {
+                return rejectWithValue('Failed to reset password');
+            }
         }
     }
 );
 
-// Thunk for changing password
-export const changePassword = createAsyncThunk<void, ChangePasswordPayload>(
+// Thunk for changing the password
+export const changePassword = createAsyncThunk(
     'auth/changePassword',
-    async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+    async ({email, password, confirmPassword}:{email: string; password: string; confirmPassword: string }, {rejectWithValue}) => {
         try {
             const token = Cookies.get('token');
-            const raw = JSON.stringify({ currentPassword, newPassword });
-            const config = { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+            if (!token) {
+                redirect('/login');
+                return rejectWithValue('Unauthorized');
+            }
 
-            const res = await axios.post(`${baseUrl}/api/v1/auth/change-password`, raw, config);
+            const raw = JSON.stringify({email: email, password: password, confirmPassword: confirmPassword});
+            const config = {headers: {Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'}};
+
+            const res = await axios.post(`${common.baseUrl}/api/v1/auth/change-password`, raw, config);
 
             if (res.status === 200) {
                 return res.data;
             } else {
-                return rejectWithValue(res.data);
+                return rejectWithValue({success: false, status: res.status, message: res.data.msg});
             }
-        } catch (e: any) {
-            return rejectWithValue(e.response?.data || 'Unknown error');
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 403) {
+                    clearAuthCookies();
+                    redirect('/login');
+                }
+                return rejectWithValue(error.response?.data?.msg);
+            } else {
+                return rejectWithValue('Failed to change password');
+            }
         }
     }
 );
 
+// Auth Slice
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        signOut: (state) => {
+        logout: (state) => {
+            clearAuthCookies();
             state.user = null;
             state.token = null;
-            clearAuthCookies();
+            state.loading = false;
+            state.error = null;
+            redirect('/login');
         },
+        checkUser(state) {
+            const user = Cookies.get('user');
+            const token = Cookies.get('token');
+            if (user && token) {
+                state.user = JSON.parse(user);
+                state.token = token;
+            }
+        }
     },
     extraReducers: (builder) => {
         builder
+            // Sign In
             .addCase(signInHost.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(signInHost.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload.user;
-                state.token = action.payload.token;
+                state.token = action.payload.data.token;
+                state.user = action.payload.data.user;
             })
             .addCase(signInHost.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            // Sign Up
             .addCase(signUpHost.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(signUpHost.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload.user;
-                state.token = action.payload.token;
+                state.token = action.payload.data.token;
+                state.user = action.payload.data.user;
             })
             .addCase(signUpHost.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            // Fetch User
+            .addCase(fetchUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload;
+            })
+            .addCase(fetchUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            // Update User
             .addCase(updateUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -225,6 +324,7 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            // Reset Password
             .addCase(resetPassword.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -236,6 +336,7 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            // Change Password
             .addCase(changePassword.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -250,5 +351,8 @@ const authSlice = createSlice({
     },
 });
 
-export const { signOut } = authSlice.actions;
+export const selectCurrentUser = (state: RootState) => state.auth.user;
+export const selectToken = (state: RootState) => state.auth.token;
+export const {logout, checkUser} = authSlice.actions;
+
 export default authSlice.reducer;

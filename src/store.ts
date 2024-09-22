@@ -1,11 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import EventReducer from './data/slices/EventSlice';
 import transactionReducer from './data/slices/transactionSlice';
+import AuthReducer from './data/slices/authSlice.ts';
+import VenueReducer from './data/slices/venueSlice.ts'; // Importing the venueSlice
 
 const store = configureStore({
     reducer: {
         events: EventReducer,
         transaction: transactionReducer,
+        auth: AuthReducer,
+        venue: VenueReducer, // Adding the venueSlice to the store
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

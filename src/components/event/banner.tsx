@@ -55,7 +55,7 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                                     label: 'Cancel Event',
                                     icon: <CloseCircleOutlined/>,
                                     danger: true,
-                                    onClick: () => dispatch(deleteEventById(event._id))
+                                    onClick: () => (event.ticketSales > 0) && dispatch(deleteEventById(event._id))
                                 }
                             ]
                         }}>

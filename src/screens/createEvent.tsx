@@ -10,10 +10,11 @@ import {ErrorMessage, Field, FieldArray, Form, Formik, FormikErrors} from 'formi
 import * as Yup from 'yup';
 import {FileImageOutlined, PlusOutlined} from "@ant-design/icons";
 import VenueWidget from "../components/venueWidget.tsx";
-import {useAppDispatch} from "../hooks/hooks.ts";
+import {useAppDispatch, useAppSelector} from "../hooks/hooks.ts";
 import {createEvent} from "../data/slices/EventSlice.ts";
 import {useNavigate} from "react-router-dom";
 import {countries} from "country-data";
+import {selectCurrentUser} from "../data/slices/authSlice.ts";
 
 
 const {Option} = Select;
@@ -47,10 +48,10 @@ const CreateEventScreen = () => {
             country: Yup.string().required('Country is required'),
         }),
     });
-    const user = localStorage.getItem('user');
+    const user = useAppSelector(selectCurrentUser);
     const initialValues: EventModel = {
         image: [], revenue: 0, ticketSales: 0, viewCount: 0, weightedRating: 0,
-        eventHostId: user ? JSON.parse(user).id : '',
+        eventHostId: user?.id || '',
         eventName: '',
         poster: '',
         eventDate: new Date(),
