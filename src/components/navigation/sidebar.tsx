@@ -5,7 +5,7 @@ import {
     FileTextOutlined,
     DollarOutlined,
     SettingOutlined,
-    LogoutOutlined, BuildOutlined,
+    LogoutOutlined, AppstoreOutlined,
 } from '@ant-design/icons';
 import {useState} from 'react';
 import {useLocation, useNavigate} from "react-router-dom";
@@ -59,7 +59,7 @@ export default function Sidebar() {
                     },
                     {
                         key: '/manage-venue',
-                        icon: <BuildOutlined/>,
+                        icon: <AppstoreOutlined />,
                         label: 'Manage Venue',
                     },
                     {

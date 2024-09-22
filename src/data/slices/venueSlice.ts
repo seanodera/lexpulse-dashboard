@@ -40,7 +40,7 @@ export const addVenue = createAsyncThunk(
                 ...getRequestHeaders(),
                 headers: {...getRequestHeaders().headers, 'Content-Type': 'multipart/form-data'}
             };
-            const response = await axios.post(`${common.baseUrl}/api/venues`, venueData, config);
+            const response = await axios.post(`${common.baseUrl}/api/v1/venues`, venueData, config);
             return response.data.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -56,7 +56,7 @@ export const searchVenues = createAsyncThunk(
     async (term: string, {rejectWithValue}) => {
         try {
             const config = getRequestHeaders();
-            const response = await axios.get(`${common.baseUrl}/api/venues/search?term=${term}`, config);
+            const response = await axios.get(`${common.baseUrl}/api/v1/venues/search?term=${term}`, config);
             return response.data.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -72,7 +72,7 @@ export const fetchVenueById = createAsyncThunk(
     async (id: string, {rejectWithValue}) => {
         try {
             const config = getRequestHeaders();
-            const response = await axios.get(`${common.baseUrl}/api/venues/${id}`, config);
+            const response = await axios.get(`${common.baseUrl}/api/v1/venues/${id}`, config);
             return response.data.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -86,7 +86,7 @@ export const fetchVenueById = createAsyncThunk(
 export const fetchUserVenues = createAsyncThunk(
     'venues/fetchUserVenues', async (id: string) => {
         const config = getRequestHeaders();
-        const response = await axios.get(`${common.baseUrl}/api/venues/user/${id}`, config);
+        const response = await axios.get(`${common.baseUrl}/api/v1/venues/user/${id}`, config);
         return response.data.data;
 
     }
@@ -96,7 +96,7 @@ export const updateVenue = createAsyncThunk(
     async ({id, updates}: { id: string, updates: Venue }, {rejectWithValue}) => {
         try {
             const config = getRequestHeaders();
-            const response = await axios.put(`${common.baseUrl}/api/venues/${id}`, updates, config);
+            const response = await axios.put(`${common.baseUrl}/api/v1/venues/${id}`, updates, config);
             return response.data.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -112,7 +112,7 @@ export const deleteVenue = createAsyncThunk(
     async (id: string, {rejectWithValue}) => {
         try {
             const config = getRequestHeaders();
-            await axios.delete(`${common.baseUrl}/api/venues/${id}`, config);
+            await axios.delete(`${common.baseUrl}/api/v1/venues/${id}`, config);
             return {id};
         } catch (error) {
             if (error instanceof AxiosError) {

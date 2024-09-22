@@ -109,7 +109,7 @@ export async function createVenueFormData(venue: Partial<Venue>) {
     }
 
     for (const [key, value] of Object.entries(venue)) {
-        if (key !== 'poster' && key !== 'images' && value !== undefined) {
+        if (key !== 'poster' && key !== 'images' && key !== '_id' && value !== undefined) {
             formData.append(key, value.toString());
         }
     }
