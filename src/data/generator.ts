@@ -78,7 +78,7 @@ export function generateVenues(count: number, {id}: {id?: string}): Venue[] {
                 city: faker.location.city(),
                 country: faker.location.country(),
                 district: faker.location.state(),
-                id: id ? id : faker.string.alphanumeric(8),
+                _id: id ? id : faker.string.alphanumeric(8),
                 links: [
                     {
                         name: 'Website',
@@ -86,12 +86,14 @@ export function generateVenues(count: number, {id}: {id?: string}): Venue[] {
                     }
                 ],
                 followers: faker.number.int({min: 2, max: 300}),
-                cover: faker.image.urlLoremFlickr({category: 'venue'}),
+                poster: faker.image.urlLoremFlickr({category: 'venue'}),
                 capacity: faker.number.int({min: 2, max: 400}),
                 type: VenueType.Arena,
                 yearEvents: faker.number.int(40),
                 phone: faker.phone.number({style: "international"}),
                 email: faker.internet.email({}),
+                images: [],
+                userId: ""
             };
             venues.push(venue);
         }

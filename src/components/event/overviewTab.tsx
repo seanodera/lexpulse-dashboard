@@ -124,7 +124,7 @@ export default function OverviewTab({event}: { event: EventModel }) {
                             <div className={'col-span-2'}>
                                 <h4 className={'text-gray-500 font-medium'}>Venue Links</h4>
                                 <div className={'flex gap-2 items-center'}>
-                                    <Button href={`https://lexpulse-web.vercel.app/venue/${venue.id}`} type={'link'}
+                                    <Button href={`https://lexpulse-web.vercel.app/venue/${venue._id}`} type={'link'}
                                             className={'text-primary'}>Venue Page</Button>
                                     {venue.links.map(link => <Button href={link.url} type={'link'}
                                                                      className={'text-dark'}>{link.name}</Button>)}

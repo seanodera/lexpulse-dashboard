@@ -178,7 +178,7 @@ export default function EditEventScreen() {
                 {/* Venue Selection */}
                 <div>
                     <Select
-                        defaultValue={currentVenue?.id}
+                        defaultValue={currentVenue?._id}
                         onChange={(value) => {
                             if (value === 'new') {
                                 setIsNewVenue(true);
@@ -197,7 +197,7 @@ export default function EditEventScreen() {
                                 });
                             } else {
                                 setIsNewVenue(false);
-                                const selectedVenue = savedVenues.find((v) => v.id === value);
+                                const selectedVenue = savedVenues.find((v) => v._id === value);
                                 if (selectedVenue) {
                                     setCurrentVenue(selectedVenue);
                                     setEvent({
@@ -210,7 +210,7 @@ export default function EditEventScreen() {
                                             country: selectedVenue.country,
                                             district: selectedVenue.district,
                                             saved: true,
-                                            id: selectedVenue.id,
+                                            id: selectedVenue._id,
                                         },
                                     });
                                 }
@@ -233,7 +233,7 @@ export default function EditEventScreen() {
                         options={[
                             ...savedVenues.map((venue) => ({
                                 label: venue.name + ' - ' + venue.city + ', ' + venue.country,
-                                value: venue.id,
+                                value: venue._id,
                             })),
                             {
                                 label: 'Add New Venue',

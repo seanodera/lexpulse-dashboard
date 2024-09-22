@@ -169,7 +169,7 @@ const CreateEventScreen = () => {
                         <div className={'rounded-xl p-4 space-y-4'}>
                             <h2 className={'text-xl font-semibold'}>Venue</h2>
                             <Select
-                                defaultValue={currentVenue?.id}
+                                defaultValue={currentVenue?._id}
                                 onChange={(value) => {
                                     if (value === 'new') {
                                         setIsNewVenue(true);
@@ -184,7 +184,7 @@ const CreateEventScreen = () => {
                                         });
                                     } else {
                                         setIsNewVenue(false);
-                                        const selectedVenue = savedVenues.find((v) => v.id === value);
+                                        const selectedVenue = savedVenues.find((v) => v._id === value);
                                         if (selectedVenue) {
                                             setCurrentVenue(selectedVenue);
                                             setFieldValue('venue', {
@@ -194,7 +194,7 @@ const CreateEventScreen = () => {
                                                 country: selectedVenue.country,
                                                 district: selectedVenue.district,
                                                 saved: true,
-                                                id: selectedVenue.id,
+                                                id: selectedVenue._id,
                                             });
                                         }
                                     }
@@ -204,7 +204,7 @@ const CreateEventScreen = () => {
                                 size={'large'}
                             >
                                 {savedVenues.map((venue) => (
-                                    <Option key={venue.id} value={venue.id}>
+                                    <Option key={venue._id} value={venue._id}>
                                         {venue.name} - {venue.city}, {venue.country}
                                     </Option>
                                 ))}
