@@ -1,9 +1,7 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {Button, DatePicker, Input, Select, Switch, TimePicker, Upload} from 'antd';
 import {EventModel, EventType, Ticket, Venue} from '../data/types';
 import {RcFile} from 'antd/lib/upload';
-import {generateVenues} from "../data/generator.ts";
-import {faker} from "@faker-js/faker";
 import {format} from "date-fns";
 import {Textarea} from "@headlessui/react";
 import {ErrorMessage, Field, FieldArray, Form, Formik, FormikErrors} from 'formik';
@@ -15,6 +13,7 @@ import {createEvent} from "../data/slices/EventSlice.ts";
 import {useNavigate} from "react-router-dom";
 import {countries} from "country-data";
 import {selectCurrentUser} from "../data/slices/authSlice.ts";
+import {searchVenues, selectSearchedVenues} from "../data/slices/venueSlice.ts";
 
 
 const {Option} = Select;
@@ -22,15 +21,13 @@ const {Option} = Select;
 const CreateEventScreen = () => {
     const inputCls = 'block border-solid border-gray-500 placeholder-gray-300 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary text-current w-full';
     const [isNewVenue, setIsNewVenue] = useState(false);
-    const [savedVenues, setSavedVenues] = useState<Venue[]>([]);
+    const savedVenues = useAppSelector(selectSearchedVenues);
     const [currentVenue, setCurrentVenue] = useState<Venue | undefined>();
     const [immediate, setImmediate] = useState(true);
     const [eventStart, setEventStart] = useState(true);
     const [multiDay, setMultiDay] = useState(false);
     const dispatch = useAppDispatch();
-    useEffect(() => {
-        setSavedVenues(generateVenues(faker.number.int(40), {}));
-    }, []);
+
 
     const EventSchema = Yup.object().shape({
         eventName: Yup.string().required('Event name is required'),
@@ -202,6 +199,8 @@ const CreateEventScreen = () => {
                                 className={'w-full'}
                                 placeholder="Select Venue or Add New"
                                 size={'large'}
+                                onSearch={(value) => dispatch(searchVenues(value))}
+                                showSearch={true}
                             >
                                 {savedVenues.map((venue) => (
                                     <Option key={venue._id} value={venue._id}>
