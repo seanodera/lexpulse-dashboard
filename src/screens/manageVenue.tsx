@@ -11,9 +11,12 @@ export default function ManageVenueScreen() {
 
     if (venues.length > 0) {
         return <div className={'p-4'}>
-            <h3 className={'text-xl font-semibold mb-4'}>Your Registered Venues</h3>
-           <div className={'grid grid-cols-4 gap-8'}>
-               {venues.map((venue: Venue, index) => <VenueComponent key={index} venue={venue}/>)}
+            <div className={'flex justify-between items-center'}>
+                <h3 className={'text-xl font-semibold mb-4'}>Your Registered Venues</h3>
+                <Link to={'/create-venue'}><Button type={'primary'}>Create A venue</Button></Link>
+            </div>
+            <div className={'grid grid-cols-4 gap-8'}>
+                {venues.map((venue: Venue, index) => <VenueComponent key={index} venue={venue}/>)}
            </div>
         </div>
     } else {
