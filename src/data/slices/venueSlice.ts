@@ -123,6 +123,32 @@ export const deleteVenue = createAsyncThunk(
     }
 );
 
+
+export const setFocusVenue = createAsyncThunk('venues/focus', async (id:string,{getState, rejectWithValue}) => {
+    try {
+        const {venue, auth} = getState() as RootState
+        const selectedVenue = venue.venues.find((v) => v._id === id);
+        if (selectedVenue){
+            return selectedVenue;
+        } else {
+            const config = getRequestHeaders();
+            const response = await axios.get(`${common.baseUrl}/api/v1/venues/${id}`, config);
+            const gottenVenue = response.data.data;
+            if (auth.user && gottenVenue.userId === auth.user.id){
+                return gottenVenue;
+            } else {
+                rejectWithValue('Not your registered Venue')
+            }
+            
+        }
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            return rejectWithValue(error.response?.data?.error || 'Failed to fetch venue');
+        }
+        return rejectWithValue('Failed to fetch venue');
+    }
+})
+
 const venueSlice = createSlice({
     name: 'venues',
     initialState,
@@ -208,7 +234,21 @@ const venueSlice = createSlice({
             .addCase(deleteVenue.rejected, (state, {payload}) => {
                 state.loading = false;
                 state.error = payload as string;
-            });
+            })
+
+            .addCase(setFocusVenue.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(setFocusVenue.fulfilled, (state, {payload}) => {
+                state.venue = payload;
+                state.loading = false;
+            })
+            .addCase(setFocusVenue.rejected, (state, {payload}) => {
+                state.loading = false;
+                state.error = payload as string;
+            })
+        ;
     }
 });
 

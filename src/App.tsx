@@ -20,6 +20,7 @@ import {checkUser, selectCurrentUser, selectToken} from "./data/slices/authSlice
 import ManageVenueScreen from "./screens/manageVenue.tsx";
 import CreateVenueScreen from "./screens/createVenue.tsx";
 import {fetchUserVenues} from "./data/slices/venueSlice.ts";
+import SingleVenueScreen from "./screens/singleVenue.tsx";
 
 function App() {
     const dispatch = useAppDispatch();
@@ -89,6 +90,7 @@ function App() {
                     <Route path="/settings" element={<SettingsPage/>} />
                     <Route path="/manage-venue" element={<ManageVenueScreen />} />
                     <Route path="/create-venue" element={<CreateVenueScreen />} />
+                    <Route path="/manage-venue/:id" element={<SingleVenueScreen />} />
                     <Route path="/manage-events" element={<ManageEvent />} />
                     <Route path="/manage-events/:id" element={<SingleEventScreen />} />
                     <Route path="/manage-events/:id/edit" element={<EditEventScreen />} />
