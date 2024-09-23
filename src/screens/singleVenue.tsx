@@ -1,9 +1,11 @@
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {useAppDispatch, useAppSelector} from "../hooks/hooks.ts";
-import {selectCurrentVenue, setFocusVenue} from "../data/slices/venueSlice.ts";
+import {getVenueEvents, selectCurrentVenue, setFocusVenue} from "../data/slices/venueSlice.ts";
 import LoadingScreen from "../components/LoadingScreen.tsx";
 import {Button, Tabs} from "antd";
+import {Venue} from "../data/types.ts";
+import EventComponent from "../components/eventComponent.tsx";
 
 
 export default function SingleVenueScreen() {
@@ -79,11 +81,34 @@ export default function SingleVenueScreen() {
             {
                 key: 'events',
                 label: 'Events',
-                children: <div>Events</div>,
+                children: <VenueEvents venue={venue} />,
             },
 
         ]}/>
 
+    </div>
+}
 
+export function VenueEvents({venue}: { venue: Venue }) {
+    const dispatch = useAppDispatch();
+    useEffect(() => {
+        if (!venue.events){
+            dispatch(getVenueEvents(venue._id))
+        }
+    }, [venue]);
+
+    if (!venue.events) {
+        return <div>
+            <LoadingScreen/>
+        </div>
+    }
+    if (venue.events.length === 0) {
+        return <div className={'text-center text-xl space-y-4 mt-16 font-semibold'}>
+            <div>This Venue doesn't have any events yet</div>
+            <Button type={'primary'}>Create Event</Button>
+        </div>
+    }
+    return <div className={'grid grid-cols-4 gap-8'}>
+        {venue.events.map((event) => <EventComponent key={event._id} event={event}/>)}
     </div>
 }

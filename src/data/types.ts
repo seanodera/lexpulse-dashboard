@@ -166,6 +166,7 @@ export interface Venue {
     email: string;
     poster: string;
     userId: string;
+    events?: EventModel[];
 }
 
 export interface CartItem {

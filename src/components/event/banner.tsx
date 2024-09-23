@@ -10,11 +10,13 @@ import {
 
 import {Link} from "react-router-dom";
 import {deleteEventById} from "../../data/slices/EventSlice.ts";
-import {useAppDispatch} from "../../hooks/hooks.ts";
+import {useAppDispatch, useAppSelector} from "../../hooks/hooks.ts";
+import {selectCurrentUser} from "../../data/slices/authSlice.ts";
 
 
 export default function SingleEventBanner({event}: { event: EventModel }) {
     const dispatch = useAppDispatch();
+    const user = useAppSelector(selectCurrentUser);
     return <div className={'bg-cover bg-center bg-no-repeat shadow'} style={{
         backgroundImage: `url("${event.cover}")`
     }}>
@@ -28,7 +30,10 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                 <div className={'flex justify-between items-center w-full'}>
                     <h1 className={'text-3xl font-semibold capitalize'}>{event.eventName}</h1>
                     <div>
-                        <Dropdown.Button buttonsRender={([leftButton, rightButton]) => [<Link className={'block'} to={`/manage-events/${event._id}/edit`}>{leftButton}</Link>, rightButton]} type={'primary'} menu={{
+                        <Dropdown.Button disabled={event.eventHostId !== user?.id}
+                                         buttonsRender={([leftButton, rightButton]) => [<Link className={'block'}
+                                                                                              to={`/manage-events/${event._id}/edit`}>{leftButton}</Link>, rightButton]}
+                                         type={'primary'} menu={{
                             items: [
                                 {
                                     key: 0,
@@ -48,13 +53,15 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                                 {
                                     key: 3,
                                     label: 'Get Report',
-                                    icon: <FileTextOutlined/>
+                                    icon: <FileTextOutlined/>,
+                                    disabled: event.eventHostId !== user?.id,
                                 },
                                 {
                                     key: 4,
                                     label: 'Cancel Event',
                                     icon: <CloseCircleOutlined/>,
                                     danger: true,
+                                    disabled: event.eventHostId !== user?.id,
                                     onClick: () => (event.ticketSales > 0) && dispatch(deleteEventById(event._id))
                                 }
                             ]
@@ -93,15 +100,15 @@ export default function SingleEventBanner({event}: { event: EventModel }) {
                     </div>
                     <div>
                         <h4 className={'text-gray-300 font-medium'}>Ticket Sales Closing</h4>
-                        <div>{format(event.endSalesDate? event.endSalesDate : event.eventDate,'EEE dd MMM YYY, HH:mm')}</div>
+                        <div>{format(event.endSalesDate ? event.endSalesDate : event.eventDate, 'EEE dd MMM YYY, HH:mm')}</div>
                     </div>
                     <div>
                         <h4 className={'text-gray-300'}>minimum Age</h4>
                         <h4>{event.minAge}+</h4>
-                        <h4 className={'text-primary'}>{event.minAge && event.minAge >= 18? 'Id Required' : ''}</h4>
+                        <h4 className={'text-primary'}>{event.minAge && event.minAge >= 18 ? 'Id Required' : ''}</h4>
                     </div>
                     <div>
-                    <h4 className={'text-gray-300'}>Dress Code</h4>
+                        <h4 className={'text-gray-300'}>Dress Code</h4>
                         <h4>{event.dress}</h4>
                     </div>
                     <div>

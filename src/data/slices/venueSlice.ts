@@ -1,9 +1,10 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios, {AxiosError} from 'axios';
 import Cookies from 'js-cookie';
-import {Venue} from '../types.ts';
+import {EventModel, Venue} from '../types.ts';
 import {common} from '../utils.ts';
 import {RootState} from "../../store.ts";
+
 
 interface VenueState {
     venues: Venue[];
@@ -11,6 +12,7 @@ interface VenueState {
     venue: Venue | null;
     loading: boolean;
     error: string | null;
+    venueEvents: {[ key: string ]: EventModel[];}
 }
 
 const initialState: VenueState = {
@@ -19,6 +21,7 @@ const initialState: VenueState = {
     venue: null,
     loading: false,
     error: null,
+    venueEvents: {}
 };
 
 // Utility to get request headers with token
@@ -122,6 +125,21 @@ export const deleteVenue = createAsyncThunk(
         }
     }
 );
+
+export const getVenueEvents = createAsyncThunk(
+    'venues/getVenueEvents', async (id: string,{rejectWithValue}) => {
+        try {
+            const config = getRequestHeaders();
+            const response = await axios.get(`${common.baseUrl}/api/v1/venues/${id}/events`, config);
+            return {id: id, events: response.data.data};
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                return rejectWithValue(error.response?.data?.error || 'Failed to fetch venue events');
+            }
+            return rejectWithValue('Failed to fetch venue events');
+        }
+    }
+)
 
 
 export const setFocusVenue = createAsyncThunk('venues/focus', async (id:string,{getState, rejectWithValue}) => {
@@ -245,6 +263,25 @@ const venueSlice = createSlice({
                 state.loading = false;
             })
             .addCase(setFocusVenue.rejected, (state, {payload}) => {
+                state.loading = false;
+                state.error = payload as string;
+            })
+
+            .addCase(getVenueEvents.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getVenueEvents.fulfilled, (state, {payload}) => {
+                const index = state.venues.findIndex((venue) => venue._id === payload.id);
+                if (index !== -1) {
+                    state.venues[ index ].events = payload.events;
+                }
+                if (state.venue && state.venue._id === payload.id){
+                    state.venue.events = payload.events;
+                }
+                state.loading = false;
+            })
+            .addCase(getVenueEvents.rejected, (state, {payload}) => {
                 state.loading = false;
                 state.error = payload as string;
             })

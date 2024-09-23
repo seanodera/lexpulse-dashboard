@@ -1,11 +1,15 @@
 import {EventModel} from "../data/types.ts";
 import {Button, Dropdown, Tag} from "antd";
 import {EllipsisOutlined} from "@ant-design/icons";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import {useAppSelector} from "../hooks/hooks.ts";
+import {selectCurrentUser} from "../data/slices/authSlice.ts";
 
 
 export default function EventComponent({event}: {event: EventModel}) {
-
+const user = useAppSelector(selectCurrentUser);
+const navigate = useNavigate();
+console.log(user?.id, event.eventHostId, event.eventHostId === user?.id)
     return (
         <Link className={'block text-current hover:text-current'} to={`/manage-events/${event._id}`}>
             <div className={'relative'}>
@@ -14,21 +18,26 @@ export default function EventComponent({event}: {event: EventModel}) {
                     <Dropdown menu={{items: [
                             {
                                 key: 0,
-                                label: 'view',
+                                label: 'View',
                                 onClick: () => {}
                             },
                             {
                                 key: 1,
-                                label: <Link to={`/manage-events/${event._id}/edit`} className={'text-current'}>edit</Link> ,
+                                label: 'Edit ',
+                                disabled: event.eventHostId !== user?.id,
+                                onClick: () => {
+                                    navigate(`/manage-events/${event._id}/edit`)
+                                }
                             },
                             {
                                 key: 2,
-                                label: 'promote'
+                                label: 'Promote',
                             },
                             {
                                 key: 3,
-                                label: 'disable',
+                                label: 'Disable',
                                 danger: true,
+                                disabled: event.eventHostId !== user?.id,
                             }
                         ]}}>
                         <Button onClick={(e) => e.preventDefault()} type={'primary'} icon={<EllipsisOutlined/>}/>
