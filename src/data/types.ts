@@ -138,7 +138,6 @@ export interface Ticket {
     saleEnd?: Date | string; // Optional
     saleStart?: Date | string; // Optional
 }
-
 export interface Discount {
     id: string;
     ticketIds: string[];

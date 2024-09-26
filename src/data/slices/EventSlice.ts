@@ -8,7 +8,7 @@ import {
     updateEvent,
     deleteEvent,
     addScanner,
-    deleteScanner,
+    deleteScanner, inviteScanner,
 } from "../eventData.ts";
 
 
@@ -115,12 +115,28 @@ export const deleteScannerById = createAsyncThunk('scanners/delete', async (scan
     }
 });
 
+//Send invite
+export const sendScannerInvite = createAsyncThunk('scanners/invite', async (scannerId: string, { rejectWithValue }) => {
+    try {
+        await inviteScanner(scannerId);
+        return scannerId;
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return rejectWithValue(error.message);
+        } else {
+            return rejectWithValue('Error deleting scanner');
+        }
+    }
+})
+
 // Event slice state
 interface EventState {
     events: EventModel[];
     focusEvent?: EventModel;
     fetching: boolean;
     fetchError: string | null;
+    scanLoading: boolean;
+    scanError?: string ;
 }
 
 const initialState: EventState = {
@@ -128,6 +144,8 @@ const initialState: EventState = {
     focusEvent: undefined,
     fetching: false,
     fetchError: null,
+    scanLoading: false,
+    scanError: undefined,
 };
 
 const EventSlice = createSlice({
@@ -186,6 +204,10 @@ const EventSlice = createSlice({
             })
 
             // Create scanner
+            .addCase(createScanner.pending, (state) => {
+                state.scanLoading = true;
+                state.scanError = undefined;
+            })
             .addCase(createScanner.fulfilled, (state, action) => {
                 const eventIndex = state.events.findIndex((v) => v._id === action.payload.eventId)
                 if (eventIndex !== -1){
@@ -194,9 +216,12 @@ const EventSlice = createSlice({
                 if (state.focusEvent) {
                     state.focusEvent.scanners.push(action.payload);
                 }
+                state.scanLoading = false;
+                state.scanError = undefined;
             })
             .addCase(createScanner.rejected, (state, action) => {
-                state.fetchError = action.payload as string;
+                state.scanLoading = false;
+                state.scanError = action.payload as string;
             })
 
             // Delete scanner by ID
@@ -215,6 +240,19 @@ const EventSlice = createSlice({
             })
             .addCase(deleteScannerById.rejected, (state, action) => {
                 state.fetchError = action.payload as string;
+            })
+        //Invite Scanner
+            .addCase(sendScannerInvite.pending,(state) => {
+                state.scanLoading = true
+                state.scanError = undefined;
+            })
+            .addCase(sendScannerInvite.fulfilled,(state) => {
+                state.scanLoading = false
+                state.scanError = undefined;
+            })
+            .addCase(sendScannerInvite.rejected,(state,action) => {
+                state.scanLoading = false
+                state.scanError = action.payload as string;
             });
     },
 });

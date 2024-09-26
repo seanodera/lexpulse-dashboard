@@ -5,6 +5,7 @@ import {common} from "./utils.ts";
 import Cookies from "js-cookie";
 import {clearAuthCookies} from "./slices/authSlice.ts";
 
+
 const baseUrl = common.baseUrl;
 
 export const getConfig = () => {
@@ -108,4 +109,15 @@ export const deleteScanner = async (scannerId: string) => {
     }
 };
 
+export const inviteScanner = async (scannerId: string) => {
+    try {
+        const response = await axios.post(`${baseUrl}/api/v1/scanners/invite/${scannerId}`, {}, getConfig());
+        return response;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 403) {
+            clearAuthCookies();
+        }
+        throw error;
+    }
+}
 
