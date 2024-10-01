@@ -211,7 +211,7 @@ export interface CombinedTicket {
 export interface Transaction {
     _id: string;
     reference: string;
-    eventId: string;
+    eventId: string | EventModel;
     hostId: string;
     attendeeId: string;
     user?: {
@@ -249,6 +249,8 @@ export interface User {
     image?: string[];
     accountActive?: boolean;
     createdAt?: Date;
+    availableBalance: number;
+    pendingBalance: number;
 }
 
 export interface WithdrawalAccount {

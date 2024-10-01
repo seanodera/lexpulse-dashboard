@@ -2,6 +2,7 @@
 import { Table } from 'antd';
 import {useAppSelector} from "../../hooks/hooks.ts";
 import {selectTransactions} from "../../data/slices/transactionSlice.ts";
+import {EventModel} from "../../data/types.ts";
 
 
 const columns = [
@@ -12,14 +13,15 @@ const columns = [
     },
     {
         title: 'User',
-        dataIndex: 'user',
+        dataIndex: 'attendeeId',
         key: 'user',
         render: (user: any) => `${user.firstName} ${user.lastName}`, // Assuming user has these properties
     },
     {
         title: 'Event Name',
-        dataIndex: 'event',
+        dataIndex: 'eventId',
         key: 'eventId',
+        render: (event: EventModel) => event.eventName,
     },
     {
         title: 'Purchase Date',
@@ -37,6 +39,6 @@ const columns = [
 
 export default function RecentPurchases() {
     const data = useAppSelector(selectTransactions)
-
+    console.log(data)
     return <Table dataSource={data} columns={columns} rowKey="_id" pagination={false} />;
 }

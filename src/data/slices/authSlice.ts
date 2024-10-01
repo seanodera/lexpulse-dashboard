@@ -44,7 +44,7 @@ export const signInHost = createAsyncThunk(
             const config = {headers: {'Content-Type': 'application/json'}};
 
             const res = await axios.post(`${common.baseUrl}/api/v1/auth`, raw, config);
-
+            console.log(res);
             if (res.status === 200) {
                 const {token, user} = res.data;
                 setAuthCookies(token, user); // Store in cookies

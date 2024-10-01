@@ -2,6 +2,7 @@ import {Button, Card, Table} from "antd";
 import WithdrawBankAccountForm from "../components/payout/WithdrawBankAccountForm.tsx";
 import {useAppSelector} from "../hooks/hooks.ts";
 import {selectTransactions} from "../data/slices/transactionSlice.ts";
+import {selectCurrentUser} from "../data/slices/authSlice.ts";
 
 
 const columns = [
@@ -12,7 +13,7 @@ const columns = [
     },
     {
         title: 'User',
-        dataIndex: 'user',
+        dataIndex: 'attendeeId',
         key: 'user',
         render: (user: {firstName: string, lastName: string}) => `${user.firstName} ${user.lastName}`, // Assuming user has these properties
     },
@@ -36,6 +37,8 @@ const columns = [
 ];
 export default function PayoutsPage() {
     const data = useAppSelector(selectTransactions)
+    const user = useAppSelector(selectCurrentUser)
+    console.log(user)
     return <div className={'p-4'}>
         <h1 className={'font-semibold text-2xl mb-1'}>Payouts</h1>
         <div className={'grid grid-cols-4 gap-8'}>
@@ -46,12 +49,12 @@ export default function PayoutsPage() {
                 <Card classNames={{body: 'space-y-4'}}>
                     <div>
                         <h3 className={'text-lg font-semibold'}>Current Balance</h3>
-                        <h4 className={'text-lg font-medium'}>GHS 34000</h4>
+                        <h4 className={'text-lg font-medium'}>GHS {user?.availableBalance || 0}</h4>
                     </div>
 
                     <div>
                         <h3 className={'text-lg font-semibold text-gray-500'}>Pending Balance</h3>
-                        <h4 className={'text-lg font-medium text-gray-500'}>GHS 34000</h4>
+                        <h4 className={'text-lg font-medium text-gray-500'}>GHS {user?.pendingBalance || 0}</h4>
                     </div>
                     <Button type={'primary'}>Withdraw</Button>
                 </Card>

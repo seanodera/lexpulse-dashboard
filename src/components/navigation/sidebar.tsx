@@ -62,11 +62,11 @@ export default function Sidebar() {
                     //     icon: <AppstoreOutlined />,
                     //     label: 'Manage Venue',
                     // },
-                    {
-                        key: '/sales-reports',
-                        icon: <DollarOutlined/>,
-                        label: 'Sales Reports',
-                    },
+                    // {
+                    //     key: '/sales-reports',
+                    //     icon: <DollarOutlined/>,
+                    //     label: 'Sales Reports',
+                    // },
                     {
                         key: '/payouts',
                         icon: <DollarOutlined/>,
