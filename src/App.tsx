@@ -12,7 +12,7 @@ import EditEventScreen from "./screens/editEvent";
 import {fetchEvents} from "./data/slices/EventSlice";
 import {useAppDispatch, useAppSelector} from "./hooks/hooks";
 import LoginPage from "./screens/login";
-import {fetchTransactions} from "./data/slices/transactionSlice.ts";
+import {fetchTransactions, fetchUserWallets} from "./data/slices/transactionSlice.ts";
 import SettingsPage from "./screens/settings.tsx";
 import PayoutsPage from "./screens/payouts.tsx";
 import SalesReport from "./screens/reports.tsx";
@@ -73,6 +73,7 @@ function App() {
             dispatch(fetchEvents(user.id));
             dispatch(fetchTransactions(user.id))
             dispatch(fetchUserVenues(user.id))
+            dispatch(fetchUserWallets(user.id))
         } else {
             navigate('/login');
         }

@@ -262,3 +262,12 @@ export interface WithdrawalAccount {
     description?: string;
     reference?: string;
 }
+
+export interface Wallet {
+    userId: string;
+    balance: number;
+    prevBalance: number;
+    pendingBalance: number;
+    pendingPrevBalance: number;
+    currency: string;
+}

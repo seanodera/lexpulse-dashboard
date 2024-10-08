@@ -2,7 +2,7 @@
 import { Table } from 'antd';
 import {useAppSelector} from "../../hooks/hooks.ts";
 import {selectTransactions} from "../../data/slices/transactionSlice.ts";
-import {EventModel} from "../../data/types.ts";
+import {EventModel, Transaction} from "../../data/types.ts";
 
 
 const columns = [
@@ -15,7 +15,7 @@ const columns = [
         title: 'User',
         dataIndex: 'attendeeId',
         key: 'user',
-        render: (user: any) => `${user.firstName} ${user.lastName}`, // Assuming user has these properties
+        render: (user: {firstName: string, lastName: string}) => `${user.firstName} ${user.lastName}`, // Assuming user has these properties
     },
     {
         title: 'Event Name',
@@ -33,7 +33,7 @@ const columns = [
         title: 'Total Amount',
         dataIndex: 'amount',
         key: 'amount',
-        render: (amount: number) => `$${amount.toFixed(2)}`,
+        render: (amount: number, record:Transaction) => `${  (typeof record.eventId !== 'string' )? record.eventId.currency  : 'GHS'}${amount.toFixed(2)}`,
     },
 ];
 
