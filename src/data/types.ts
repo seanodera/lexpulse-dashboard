@@ -251,16 +251,35 @@ export interface User {
     createdAt?: Date;
     availableBalance: number;
     pendingBalance: number;
+    withdrawalAccounts: WithdrawalAccount[];
 }
 
 export interface WithdrawalAccount {
-    account_number: string;
-    bank_code: string;
+    _id: string;
+    userId: string;
+    type: string;
+    name: string;
+    accountNumber: string;
+    bank_code?: string;
+    currency?: string;
+    bank_name?: string;
+    recipient_code?: string;
+    service: 'Pawapay' | 'Paystack';
+    createdAt?: Date;
+    active?: boolean;
+    flagged?: boolean;
+    reason?: string;
+}
+export interface Payout {
     amount: number;
     currency: string;
-    account_name?: string;
-    description?: string;
-    reference?: string;
+    status?: 'pending' | 'approved' | 'rejected';
+    reason?: string;
+    walletId: string;
+    withdrawalAccountId: string;
+    userId: string;
+    approvedBy?: string;
+    createdAt?: Date;
 }
 
 export interface Wallet {

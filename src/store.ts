@@ -1,8 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 import EventReducer from './data/slices/EventSlice';
 import transactionReducer from './data/slices/transactionSlice';
-import AuthReducer from './data/slices/authSlice.ts';
-import VenueReducer from './data/slices/venueSlice.ts'; // Importing the venueSlice
+import AuthReducer from './data/slices/authSlice';
+import VenueReducer from './data/slices/venueSlice'; // Importing the venueSlice
+import PayoutReducer from './data/slices/payoutSlice'; // Importing the payoutSlice
 
 const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
         transaction: transactionReducer,
         auth: AuthReducer,
         venue: VenueReducer, // Adding the venueSlice to the store
+        payout: PayoutReducer, // Adding the payoutSlice to the store
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
