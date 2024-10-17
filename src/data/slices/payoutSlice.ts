@@ -5,6 +5,23 @@ import {common} from "../utils.ts";
 
 
 const API_URL = `${common.baseUrl}/api/v1/payouts`;
+export interface OperationType {
+    operationType: string;
+    minTransactionLimit: string;
+    maxTransactionLimit: string;
+}
+
+export interface Correspondent {
+    correspondent: string;
+    currency: string;
+    ownerName: string;
+    operationTypes: OperationType[];
+}
+
+export interface IPawaPayConfig {
+    country: string;
+    correspondents: Correspondent[];
+}
 
 
 interface PayoutState {
@@ -12,6 +29,7 @@ interface PayoutState {
     banks: any[];
     payout: any;
     payouts: any[];
+    configs:IPawaPayConfig[];
     loading: boolean;
     error: string | null;
 }
@@ -21,6 +39,7 @@ const initialState: PayoutState = {
     banks: [],
     payout: null,
     payouts: [],
+    configs: [],
     loading: false,
     error: null,
 };
@@ -59,6 +78,23 @@ export const getPaystackBanks = createAsyncThunk(
         }
     }
 );
+
+export const getPawapayConfigs = createAsyncThunk(
+    'payout/getPawapayConfigs',async (currency:string, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${API_URL}/configs`, {
+                params: {currency},
+            })
+            return response.data;
+        } catch (error){
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            } else {
+                return rejectWithValue('Error getting Configs');
+            }
+        }
+    }
+)
 
 export const getWithdrawalAccount = createAsyncThunk(
     'payout/getWithdrawalAccount',
@@ -113,7 +149,7 @@ export const getPayouts = createAsyncThunk(
     async (userId, { rejectWithValue }) => {
         try {
             const response = await axios.get(`${API_URL}/${userId}`);
-            return response.data;
+            return response.data.data;
         } catch (error: unknown) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
@@ -158,6 +194,18 @@ const PayoutSlice = createSlice({
                 state.error = action.payload as string;
             })
 
+            .addCase(getPawapayConfigs.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getPawapayConfigs.fulfilled, (state, action) => {
+                state.loading = false;
+                state.configs = action.payload.data;
+            })
+            .addCase(getPawapayConfigs.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
             .addCase(getWithdrawalAccount.pending, (state) => {
                 state.loading = true;
                 state.error = null;

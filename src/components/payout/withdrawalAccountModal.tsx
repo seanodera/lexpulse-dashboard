@@ -1,26 +1,37 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Input, Select, Form, Button } from 'antd';
-
-
-import { countries } from 'country-data';
-import {getPaystackBanks} from "../../data/slices/payoutSlice.ts";
-import {useAppDispatch, useAppSelector} from '../../hooks/hooks.ts';
+import { Correspondent, getPawapayConfigs, getPaystackBanks } from "../../data/slices/payoutSlice.ts";
+import { useAppDispatch, useAppSelector } from '../../hooks/hooks.ts';
 
 export default function WithdrawalBankModal({ show, setShow }: { show: boolean, setShow: (value: boolean) => void }) {
     const inputCls = 'block border-solid border-gray-500 placeholder-gray-300 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary text-current w-full';
-    const { loading, banks } = useAppSelector(state => state.payout);
+    const { loading, banks, configs } = useAppSelector(state => state.payout);
     const dispatch = useAppDispatch();
 
     const [currency, setCurrency] = useState('GHS');
 
     useEffect(() => {
         dispatch(getPaystackBanks(currency));
+        dispatch(getPawapayConfigs(currency));
     }, [currency, dispatch]);
 
     const handleFinish = (values: any) => {
         console.log('Received values of form: ', values);
         // Your logic to handle form submission
     };
+
+    function mapConfigs() {
+        const newConfigs: Correspondent[] = [];
+        console.log(configs)
+        configs.forEach(config => {
+            config.correspondents.forEach(correspondent => {
+                if (correspondent.operationTypes.some(value => value.operationType === 'PAYOUT')) {
+                    newConfigs.push(correspondent);
+                }
+            });
+        });
+        return newConfigs;
+    }
 
     return (
         <Modal
@@ -36,7 +47,7 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                 initialValues={{
                     account_number: '',
                     bank_code: '',
-                    currency: 'GHS',
+                    currency: currency,
                     account_name: '',
                 }}
             >
@@ -61,12 +72,19 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                     name="bank_code"
                     rules={[{ required: true, message: 'Please choose your bank' }]}
                 >
-                    <Select placeholder="Enter your bank " className={inputCls} options={
-                        banks.map((value) => ({
-                            label: value.name,
-                            value: value.id,
-                        }))
-                    } />
+                    <Select
+                        placeholder="Enter your bank"
+                        className={inputCls}
+                        options={
+                            currency === 'GHS' ? banks.map((value) => ({
+                                label: value.name,
+                                value: value.id,
+                            })) : mapConfigs().map(value => ({
+                                label: value.correspondent,
+                                value: value.correspondent,
+                            }))
+                        }
+                    />
                 </Form.Item>
 
                 <Form.Item
@@ -82,14 +100,9 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                             setCurrency(value);
                         }}
                         options={[
-                            {
-                                label: countries['GH'].currencies[0],
-                                value: countries['GH'].currencies[0],
-                            },
-                            {
-                                label: countries['KE'].currencies[0],
-                                value: countries['KE'].currencies[0],
-                            }
+                            { label: 'GHS', value: 'GHS' },
+                            { label: 'KES', value: 'KES' },
+                            // Add more currencies as needed
                         ]}
                     />
                 </Form.Item>
@@ -103,4 +116,3 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
         </Modal>
     );
 }
-
