@@ -1,11 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Modal, Input, Select, Form, Button } from 'antd';
-import { Correspondent, getPawapayConfigs, getPaystackBanks } from "../../data/slices/payoutSlice.ts";
-import { useAppDispatch, useAppSelector } from '../../hooks/hooks.ts';
+import {useEffect, useState} from 'react';
+import {Modal, Input, Select, Form, Button} from 'antd';
+import {
+    addWithdrawalAccount,
+    Correspondent,
+    getPawapayConfigs,
+    getPaystackBanks
+} from "../../data/slices/payoutSlice.ts";
+import {useAppDispatch, useAppSelector} from '../../hooks/hooks.ts';
+import {selectCurrentUser} from "../../data/slices/authSlice.ts";
 
-export default function WithdrawalBankModal({ show, setShow }: { show: boolean, setShow: (value: boolean) => void }) {
+export default function WithdrawalBankModal({show, setShow}: { show: boolean, setShow: (value: boolean) => void }) {
     const inputCls = 'block border-solid border-gray-500 placeholder-gray-300 bg-transparent rounded-lg hover:border-primary active:border-primary ring-primary text-current w-full';
-    const { loading, banks, configs } = useAppSelector(state => state.payout);
+    const {loading, banks, configs} = useAppSelector(state => state.payout);
+    const user = useAppSelector(selectCurrentUser);
     const dispatch = useAppDispatch();
 
     const [currency, setCurrency] = useState('GHS');
@@ -16,7 +23,35 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
     }, [currency, dispatch]);
 
     const handleFinish = (values: any) => {
-        console.log('Received values of form: ', values);
+        const selectedBank = banks.find((value) => value.id.toString() === values.bank_code);
+        if (user) {
+            if (currency === 'GHS') {
+                if (selectedBank) {
+                    dispatch(addWithdrawalAccount({
+                        accountNumber: values.account_number,
+                        bankCode: values.bank_code,
+                        bankName: selectedBank.name,
+                        currency: values.currency,
+                        name: values.account_name,
+                        type: selectedBank.type,
+                        userId: user.id
+
+                    }))
+                }
+            } else {
+                dispatch(addWithdrawalAccount({
+                    accountNumber: values.account_number,
+                    bankCode: values.bank_code,
+                    bankName: values.bank_code,
+                    currency: values.currency,
+                    name: values.name,
+                    type: 'MSISDN',
+                    userId: user.id
+
+                }))
+            }
+        }
+        console.log('Received values of form: ', values,selectedBank);
         // Your logic to handle form submission
     };
 
@@ -54,23 +89,23 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                 <Form.Item
                     label="Account Name"
                     name="account_name"
-                    rules={[{ required: true, message: 'Please enter your account name' }]}
+                    rules={[{required: true, message: 'Please enter your account name'}]}
                 >
-                    <Input placeholder="Enter your account name" className={inputCls} />
+                    <Input placeholder="Enter your account name" className={inputCls}/>
                 </Form.Item>
 
                 <Form.Item
                     label="Account Number"
                     name="account_number"
-                    rules={[{ required: true, message: 'Please enter your account number' }]}
+                    rules={[{required: true, message: 'Please enter your account number'}]}
                 >
-                    <Input placeholder="Enter your account number" className={inputCls} />
+                    <Input placeholder="Enter your account number" className={inputCls}/>
                 </Form.Item>
 
                 <Form.Item
                     label="Bank"
                     name="bank_code"
-                    rules={[{ required: true, message: 'Please choose your bank' }]}
+                    rules={[{required: true, message: 'Please choose your bank'}]}
                 >
                     <Select
                         placeholder="Enter your bank"
@@ -78,7 +113,7 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                         options={
                             currency === 'GHS' ? banks.map((value) => ({
                                 label: value.name,
-                                value: value.id,
+                                value: value.code,
                             })) : mapConfigs().map(value => ({
                                 label: value.correspondent,
                                 value: value.correspondent,
@@ -91,7 +126,7 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                     label="Currency"
                     name="currency"
                     initialValue={currency}
-                    rules={[{ required: true, message: 'Please select your currency' }]}
+                    rules={[{required: true, message: 'Please select your currency'}]}
                 >
                     <Select
                         className={inputCls}
@@ -100,8 +135,8 @@ export default function WithdrawalBankModal({ show, setShow }: { show: boolean, 
                             setCurrency(value);
                         }}
                         options={[
-                            { label: 'GHS', value: 'GHS' },
-                            { label: 'KES', value: 'KES' },
+                            {label: 'GHS', value: 'GHS'},
+                            {label: 'KES', value: 'KES'},
                             // Add more currencies as needed
                         ]}
                     />

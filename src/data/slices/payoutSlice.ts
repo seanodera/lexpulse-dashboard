@@ -1,10 +1,10 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
 import {common} from "../utils.ts";
 
 
-
 const API_URL = `${common.baseUrl}/api/v1/payouts`;
+
 export interface OperationType {
     operationType: string;
     minTransactionLimit: string;
@@ -23,13 +23,30 @@ export interface IPawaPayConfig {
     correspondents: Correspondent[];
 }
 
+export interface IPaystackBank {
+    name: string;
+    slug: string;
+    code: string;
+    longcode: string;
+    gateway: string | null;
+    pay_with_bank: boolean;
+    active: boolean;
+    is_deleted: boolean;
+    country: string;
+    currency: string;
+    type: string;
+    id: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 
 interface PayoutState {
     withdrawalAccount: any;
-    banks: any[];
+    banks: IPaystackBank[];
     payout: any;
     payouts: any[];
-    configs:IPawaPayConfig[];
+    configs: IPawaPayConfig[];
     loading: boolean;
     error: string | null;
 }
@@ -47,11 +64,21 @@ const initialState: PayoutState = {
 
 export const addWithdrawalAccount = createAsyncThunk(
     'payout/addWithdrawalAccount',
-    async (withdrawalData, { rejectWithValue }) => {
+    async (withdrawalData: {
+        userId: string,
+        type: string,
+        name: string,
+        accountNumber: string,
+        bankCode: string,
+        currency: string,
+        bankName: string
+    }, {rejectWithValue}) => {
         try {
             const response = await axios.post(`${API_URL}/account/create`, withdrawalData);
+            console.log(response.data)
             return response.data;
         } catch (error: unknown) {
+            console.log(error);
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
             } else {
@@ -63,10 +90,10 @@ export const addWithdrawalAccount = createAsyncThunk(
 
 export const getPaystackBanks = createAsyncThunk(
     'payout/getPaystackBanks',
-    async (currency:string, { rejectWithValue }) => {
+    async (currency: string, {rejectWithValue}) => {
         try {
             const response = await axios.get(`${API_URL}/banks`, {
-                params: { currency },
+                params: {currency},
             });
             return response.data;
         } catch (error: unknown) {
@@ -80,13 +107,13 @@ export const getPaystackBanks = createAsyncThunk(
 );
 
 export const getPawapayConfigs = createAsyncThunk(
-    'payout/getPawapayConfigs',async (currency:string, { rejectWithValue }) => {
+    'payout/getPawapayConfigs', async (currency: string, {rejectWithValue}) => {
         try {
             const response = await axios.get(`${API_URL}/configs`, {
                 params: {currency},
             })
             return response.data;
-        } catch (error){
+        } catch (error) {
             if (error instanceof Error) {
                 return rejectWithValue(error.message);
             } else {
@@ -98,7 +125,7 @@ export const getPawapayConfigs = createAsyncThunk(
 
 export const getWithdrawalAccount = createAsyncThunk(
     'payout/getWithdrawalAccount',
-    async (id, { rejectWithValue }) => {
+    async (id, {rejectWithValue}) => {
         try {
             const response = await axios.get(`${API_URL}/account/${id}`);
             return response.data;
@@ -114,7 +141,7 @@ export const getWithdrawalAccount = createAsyncThunk(
 
 export const deleteWithdrawalAccount = createAsyncThunk(
     'payout/deleteWithdrawalAccount',
-    async (id, { rejectWithValue }) => {
+    async (id, {rejectWithValue}) => {
         try {
             const response = await axios.delete(`${API_URL}/account/${id}`);
             return response.data;
@@ -130,7 +157,7 @@ export const deleteWithdrawalAccount = createAsyncThunk(
 
 export const requestPayout = createAsyncThunk(
     'payout/requestPayout',
-    async (payoutData, { rejectWithValue }) => {
+    async (payoutData, {rejectWithValue}) => {
         try {
             const response = await axios.post(`${API_URL}/create`, payoutData);
             return response.data;
@@ -146,7 +173,7 @@ export const requestPayout = createAsyncThunk(
 
 export const getPayouts = createAsyncThunk(
     'payout/getPayouts',
-    async (userId, { rejectWithValue }) => {
+    async (userId, {rejectWithValue}) => {
         try {
             const response = await axios.get(`${API_URL}/${userId}`);
             return response.data.data;
