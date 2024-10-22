@@ -4,19 +4,21 @@ import Cookies from 'js-cookie';
 
 import {common, getCountry} from "../utils.ts";
 
-import {User} from "../types.ts";
+import {User, WithdrawalAccount} from "../types.ts";
 import {redirect} from "react-router-dom";
 import {RootState} from "../../store.ts"; // Router for navigation in Vite.js
 
 
 interface AuthState {
     user: User | null;
+    accounts:WithdrawalAccount[]
     token: string | null;
     loading: boolean;
     error: string | null;
 }
 
 const initialState: AuthState = {
+    accounts: [],
     user: null,
     token: null,
     loading: false,
@@ -38,7 +40,7 @@ export const clearAuthCookies = () => {
 // Thunk for signing in
 export const signInHost = createAsyncThunk(
     'auth/signIn',
-    async ({email, password}:{ email: string; password: string }, {rejectWithValue}) => {
+    async ({email, password}:{ email: string; password: string }, {rejectWithValue,dispatch}) => {
         try {
             const raw = JSON.stringify({email, password});
             const config = {headers: {'Content-Type': 'application/json'}};
@@ -48,6 +50,7 @@ export const signInHost = createAsyncThunk(
             if (res.status === 200) {
                 const {token, user} = res.data;
                 setAuthCookies(token, user); // Store in cookies
+                dispatch(fetchUserWithdrawalAccounts(user.id))
                 return {success: true, status: res.status, data: {token, user}};
             } else {
                 return rejectWithValue({success: false, status: res.status, message: res.data.msg});
@@ -246,6 +249,27 @@ export const changePassword = createAsyncThunk(
     }
 );
 
+
+export const fetchUserWithdrawalAccounts = createAsyncThunk('auth/withdrawalAccount', async (id:string, {rejectWithValue}) => {
+    try {
+        const response = await axios.get(`${common.baseUrl}/api/v1/payouts/accounts/${id}`)
+        console.log(response.data)
+        return response.data.data;
+    } catch (error) {
+        console.log(error)
+        if (error instanceof AxiosError) {
+            if (error.response?.status === 403) {
+                clearAuthCookies();
+                redirect('/login');
+            }
+            return rejectWithValue(error.response?.data?.msg);
+        } else {
+            return rejectWithValue('Failed to user account');
+        }
+    }
+})
+
+
 // Auth Slice
 const authSlice = createSlice({
     name: 'auth',
@@ -347,7 +371,19 @@ const authSlice = createSlice({
             .addCase(changePassword.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
-            });
+            })
+            .addCase(fetchUserWithdrawalAccounts.pending,(state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchUserWithdrawalAccounts.fulfilled, (state, action) => {
+                state.accounts = action.payload
+                state.loading = false;
+                state.error = null;
+            }) .addCase(fetchUserWithdrawalAccounts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
     },
 });
 

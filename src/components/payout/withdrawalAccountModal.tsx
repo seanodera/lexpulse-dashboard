@@ -23,8 +23,9 @@ export default function WithdrawalBankModal({show, setShow}: { show: boolean, se
     }, [currency, dispatch]);
 
     const handleFinish = (values: any) => {
-        const selectedBank = banks.find((value) => value.id.toString() === values.bank_code);
+        const selectedBank = banks.find((value) => value.code === values.bank_code);
         if (user) {
+            console.log('User', currency, selectedBank);
             if (currency === 'GHS') {
                 if (selectedBank) {
                     dispatch(addWithdrawalAccount({
@@ -72,6 +73,7 @@ export default function WithdrawalBankModal({show, setShow}: { show: boolean, se
         <Modal
             open={show}
             onCancel={() => setShow(false)}
+            onClose={() => {setShow(false)}}
             title={<h3 className='text-lg font-semibold'>Bank Account Information</h3>}
             footer={null}
             loading={loading}
@@ -125,12 +127,12 @@ export default function WithdrawalBankModal({show, setShow}: { show: boolean, se
                 <Form.Item
                     label="Currency"
                     name="currency"
-                    initialValue={currency}
+
                     rules={[{required: true, message: 'Please select your currency'}]}
                 >
                     <Select
                         className={inputCls}
-                        defaultValue="GHS"
+
                         onChange={(value: string) => {
                             setCurrency(value);
                         }}
