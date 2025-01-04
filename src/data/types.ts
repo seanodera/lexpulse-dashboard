@@ -166,6 +166,8 @@ export interface Venue {
     poster: string;
     userId: string;
     events?: EventModel[];
+    tables?: VenueTable[];
+    recurringEvents?: RecurringEvent[];
 }
 
 export interface CartItem {
@@ -289,4 +291,25 @@ export interface Wallet {
     pendingBalance: number;
     pendingPrevBalance: number;
     currency: string;
+}
+
+export interface VenueTable {
+    name: string,
+    venueId: string,
+    description: string,
+    minimumSpend: number,
+    available: number,
+}
+
+export interface RecurringEvent {
+    id: string
+    venueId: string
+    startDate: Date
+    endDate: Date
+    name: string
+    description: string
+    dayOfWeek: number
+    tables: VenueTable[]
+    startTime: string
+    endTime: string
 }

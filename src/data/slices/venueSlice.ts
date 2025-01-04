@@ -1,7 +1,7 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios, {AxiosError} from 'axios';
 import Cookies from 'js-cookie';
-import {EventModel, Venue} from '../types.ts';
+import {EventModel, RecurringEvent, Venue, VenueTable} from '../types.ts';
 import {common} from '../utils.ts';
 import {RootState} from "../../store.ts";
 
@@ -157,7 +157,7 @@ export const setFocusVenue = createAsyncThunk('venues/focus', async (id:string,{
             } else {
                 rejectWithValue('Not your registered Venue')
             }
-            
+
         }
     } catch (error) {
         if (error instanceof AxiosError) {
@@ -166,6 +166,36 @@ export const setFocusVenue = createAsyncThunk('venues/focus', async (id:string,{
         return rejectWithValue('Failed to fetch venue');
     }
 })
+
+export const createVenueTableAsync = createAsyncThunk(
+    'venues/createVenueTable',
+    async ({venueId, table}: {venueId: string, table: VenueTable}, {rejectWithValue}) => {
+        try {
+            const config = getRequestHeaders();
+            const response = await axios.post(`${common.baseUrl}/api/v1/venues/${venueId}/table`, table, config);
+            return response.data.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                return rejectWithValue(error.response?.data?.error || 'Failed to create venue table');
+            }
+        }
+    }
+)
+
+export const createRecurringEventAsync = createAsyncThunk(
+    'venues/createRecurringEvent',
+    async ({venueId, event}: {venueId: string, event: RecurringEvent}, {rejectWithValue}) => {
+        try {
+            const config = getRequestHeaders();
+            const response = await axios.post(`${common.baseUrl}/api/v1/venues/${venueId}/recurring`, event, config);
+            return response.data.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                return rejectWithValue(error.response?.data?.error || 'Failed to create venue event');
+            }
+        }
+    }
+)
 
 const venueSlice = createSlice({
     name: 'venues',
@@ -282,6 +312,52 @@ const venueSlice = createSlice({
                 state.loading = false;
             })
             .addCase(getVenueEvents.rejected, (state, {payload}) => {
+                state.loading = false;
+                state.error = payload as string;
+            })
+
+            .addCase(createVenueTableAsync.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createVenueTableAsync.fulfilled, (state, {payload}) => {
+                const index = state.venues.findIndex((venue) => venue._id === payload.venueId);
+                if (index !== -1) {
+                    state.venues[ index ].tables = state.venues[ index ].tables
+                        ? [...state.venues[ index ].tables, payload]
+                        : [payload];
+                }
+                if (state.venue && state.venue._id === payload.venueId) {
+                    state.venue.tables = state.venue.tables
+                        ? [...state.venue.tables, payload]
+                        : [payload];
+                }
+                state.loading = false;
+            })
+            .addCase(createVenueTableAsync.rejected, (state, {payload}) => {
+                state.loading = false;
+                state.error = payload as string;
+            })
+
+            .addCase(createRecurringEventAsync.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createRecurringEventAsync.fulfilled, (state, {payload}) => {
+                const index = state.venues.findIndex((venue) => venue._id === payload.venueId);
+                if (index !== -1) {
+                    state.venues[ index ].events = state.venues[ index ].events
+                        ? [...state.venues[ index ].events, payload]
+                        : [payload];
+                }
+                if (state.venue && state.venue._id === payload.venueId) {
+                    state.venue.events = state.venue.events
+                        ? [...state.venue.events, payload]
+                        : [payload];
+                }
+                state.loading = false;
+            })
+            .addCase(createRecurringEventAsync.rejected, (state, {payload}) => {
                 state.loading = false;
                 state.error = payload as string;
             })

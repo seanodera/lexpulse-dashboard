@@ -1,23 +1,33 @@
 import {useParams} from "react-router-dom";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../hooks/hooks.ts";
-import {getVenueEvents, selectCurrentVenue, setFocusVenue} from "../data/slices/venueSlice.ts";
+import {selectCurrentVenue, setFocusVenue} from "../data/slices/venueSlice.ts";
 import LoadingScreen from "../components/LoadingScreen.tsx";
 import {Button, Tabs} from "antd";
-import {Venue} from "../data/types.ts";
-import EventComponent from "../components/eventComponent.tsx";
+import VenueTables from "../components/venue/venueTables.tsx";
+import RecurringEvents from "../components/venue/recurringEvents.tsx";
+import VenueEvents from "../components/venue/VenueEvents.tsx";
+import CreateRecurringEventModal from "../components/venue/createRecurringEventModal.tsx";
+import CreateVenueTableModal from "../components/venue/CreateVenueTableModal.tsx";
 
 
 export default function SingleVenueScreen() {
     const id = useParams().id;
     const venue = useAppSelector(selectCurrentVenue)
     const dispatch = useAppDispatch();
+    const [isRecurringEventModalVisible, setRecurringEventModalVisible] = useState(false);
+    const [isVenueTableModalVisible, setVenueTableModalVisible] = useState(false);
+
     useEffect(() => {
         if (id && (!venue || id !== venue._id)) {
             dispatch(setFocusVenue(id))
         }
     }, [id]);
+    const [activeTabKey, setActiveTabKey] = useState("main");
 
+    const handleTabChange = (key: string) => {
+        setActiveTabKey(key);
+    };
     if (!venue) {
        return <div><LoadingScreen/></div>
     }
@@ -35,7 +45,7 @@ export default function SingleVenueScreen() {
                                                   className={'rounded-lg aspect-square object-cover h-full'}/>)}
             </div>
         </div>
-        <Tabs defaultActiveKey={'main'} items={[
+        <Tabs defaultActiveKey={'main'} onChange={handleTabChange}  items={[
             {
                 key: 'main',
                 label: 'Overview',
@@ -83,32 +93,27 @@ export default function SingleVenueScreen() {
                 label: 'Events',
                 children: <VenueEvents venue={venue} />,
             },
+            {
+                key: 'tables',
+                label: 'Tables',
+                children: <VenueTables venue={venue} />
+            },{
+            key: 'recurringEvents',
+                label: 'Recurring Events',
+                children: <RecurringEvents venue={venue} />
+            }
 
-        ]}/>
+        ]} tabBarExtraContent={activeTabKey === 'recurringEvents' ? <Button type={'primary'}>Create Recurring Event</Button> : activeTabKey === 'tables' ? <Button type={'primary'}>Create Table</Button> : null}/>
 
+
+        {activeTabKey === 'recurringEvents' && (
+            <CreateRecurringEventModal isVisible={isRecurringEventModalVisible}
+                                       toggleModal={setRecurringEventModalVisible} venue={venue}/>
+        )}
+        {activeTabKey === 'tables' && (
+            <CreateVenueTableModal isVisible={isVenueTableModalVisible} toggleModal={setVenueTableModalVisible}
+                                   venue={venue}/>
+        )}
     </div>
 }
 
-export function VenueEvents({venue}: { venue: Venue }) {
-    const dispatch = useAppDispatch();
-    useEffect(() => {
-        if (!venue.events){
-            dispatch(getVenueEvents(venue._id))
-        }
-    }, [venue]);
-
-    if (!venue.events) {
-        return <div>
-            <LoadingScreen/>
-        </div>
-    }
-    if (venue.events.length === 0) {
-        return <div className={'text-center text-xl space-y-4 mt-16 font-semibold'}>
-            <div>This Venue doesn't have any events yet</div>
-            <Button type={'primary'}>Create Event</Button>
-        </div>
-    }
-    return <div className={'grid grid-cols-4 gap-8'}>
-        {venue.events.map((event) => <EventComponent key={event._id} event={event}/>)}
-    </div>
-}
