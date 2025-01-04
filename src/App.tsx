@@ -7,17 +7,14 @@ import CreateEventScreen from "./screens/createEvent";
 import ManageEvent from "./screens/manageEvent";
 import SingleEventScreen from "./screens/singleEvent";
 import EditEventScreen from "./screens/editEvent";
-import {fetchEvents} from "./data/slices/EventSlice";
-import {useAppDispatch, useAppSelector} from "./hooks/hooks";
+import {useAppDispatch} from "./hooks/hooks";
 import LoginPage from "./screens/login";
-import {fetchTransactions, fetchUserWallets} from "./data/slices/transactionSlice.ts";
 import SettingsPage from "./screens/settings.tsx";
 import PayoutsPage from "./screens/payouts.tsx";
 import SalesReport from "./screens/reports.tsx";
-import {checkUser} from "./data/slices/authSlice.ts";
+import {autoLoginUserAsync} from "./data/slices/authSlice.ts";
 import ManageVenueScreen from "./screens/manageVenue.tsx";
 import CreateVenueScreen from "./screens/createVenue.tsx";
-import {fetchUserVenues} from "./data/slices/venueSlice.ts";
 import SingleVenueScreen from "./screens/singleVenue.tsx";
 import ContextProvider from "./shells/ContextProvider.tsx";
 
@@ -26,29 +23,16 @@ function App() {
 
     const navigate = useNavigate();
 
-
-
-    useEffect(() => {
-        dispatch(checkUser());
-    }, [dispatch]);
-    const {token, user, loading} = useAppSelector(state => state.auth);
-
     useEffect(() => {
         async function initialize(){
-            if (token && user) {
-                dispatch(fetchEvents(user.id));
-                dispatch(fetchTransactions(user.id))
-                dispatch(fetchUserVenues(user.id))
-                dispatch(fetchUserWallets(user.id))
-            } else {
-                if (!loading){
+            await dispatch(autoLoginUserAsync()).then((value) => {
+                if (value.meta.requestStatus === 'rejected'){
                     navigate('/login');
                 }
-
-            }
+            })
         }
         initialize();
-    }, [token, user]);
+    }, [dispatch, navigate]);
 
     return (
         <ContextProvider>

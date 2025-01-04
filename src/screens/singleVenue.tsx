@@ -29,7 +29,7 @@ export default function SingleVenueScreen() {
         setActiveTabKey(key);
     };
     if (!venue) {
-       return <div><LoadingScreen/></div>
+        return <div><LoadingScreen/></div>
     }
     return <div className={'p-4'}>
         <div className={'flex justify-between items-center mb-2'}>
@@ -45,7 +45,7 @@ export default function SingleVenueScreen() {
                                                   className={'rounded-lg aspect-square object-cover h-full'}/>)}
             </div>
         </div>
-        <Tabs defaultActiveKey={'main'} onChange={handleTabChange}  items={[
+        <Tabs defaultActiveKey={'main'} onChange={handleTabChange} items={[
             {
                 key: 'main',
                 label: 'Overview',
@@ -91,19 +91,21 @@ export default function SingleVenueScreen() {
             {
                 key: 'events',
                 label: 'Events',
-                children: <VenueEvents venue={venue} />,
+                children: <VenueEvents venue={venue}/>,
             },
             {
                 key: 'tables',
                 label: 'Tables',
-                children: <VenueTables venue={venue} />
-            },{
-            key: 'recurringEvents',
+                children: <VenueTables venue={venue}/>
+            }, {
+                key: 'recurringEvents',
                 label: 'Recurring Events',
-                children: <RecurringEvents venue={venue} />
+                children: <RecurringEvents venue={venue}/>
             }
 
-        ]} tabBarExtraContent={activeTabKey === 'recurringEvents' ? <Button type={'primary'}>Create Recurring Event</Button> : activeTabKey === 'tables' ? <Button type={'primary'}>Create Table</Button> : null}/>
+        ]} tabBarExtraContent={activeTabKey === 'recurringEvents' ?
+            <Button onClick={() => setRecurringEventModalVisible(true)} type={'primary'}>Create Recurring
+                Event</Button> : activeTabKey === 'tables' ? <Button type={'primary'} onClick={() => setVenueTableModalVisible(true)}>Create Table</Button> : null}/>
 
 
         {activeTabKey === 'recurringEvents' && (

@@ -12,7 +12,7 @@ export default function CreateRecurringEventModal({isVisible, toggleModal, venue
     };
 
     return (
-        <Modal visible={isVisible} onCancel={() => toggleModal(false)} footer={null}>
+        <Modal open={isVisible} onCancel={() => toggleModal(false)} footer={null}>
             <Form form={form} layout="vertical" onFinish={submitForm}>
                 <Form.Item
                     name="eventName"

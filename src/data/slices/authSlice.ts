@@ -6,12 +6,16 @@ import {common, getCountry} from "../utils.ts";
 
 import {User, WithdrawalAccount} from "../types.ts";
 import {redirect} from "react-router-dom";
-import {RootState} from "../../store.ts"; // Router for navigation in Vite.js
+import {RootState} from "../../store.ts";
+import {getConfig} from "../eventData.ts";
+import {fetchEvents} from "./EventSlice.ts";
+import {fetchTransactions, fetchUserWallets} from "./transactionSlice.ts";
+import {fetchUserVenues} from "./venueSlice.ts"; // Router for navigation in Vite.js
 
 
 interface AuthState {
     user: User | null;
-    accounts:WithdrawalAccount[]
+    accounts: WithdrawalAccount[]
     token: string | null;
     loading: boolean;
     error: string | null;
@@ -40,7 +44,7 @@ export const clearAuthCookies = () => {
 // Thunk for signing in
 export const signInHost = createAsyncThunk(
     'auth/signIn',
-    async ({email, password}:{ email: string; password: string }, {rejectWithValue,dispatch}) => {
+    async ({email, password}: { email: string; password: string }, {rejectWithValue, dispatch}) => {
         try {
             const raw = JSON.stringify({email, password});
             const config = {headers: {'Content-Type': 'application/json'}};
@@ -119,7 +123,7 @@ export const signUpHost = createAsyncThunk(
 // Thunk for getting the user data
 export const fetchUser = createAsyncThunk(
     'auth/fetchUser',
-    async (id:string, {rejectWithValue}) => {
+    async (id: string, {rejectWithValue}) => {
         try {
             const token = Cookies.get('token');
             if (!token) {
@@ -154,7 +158,7 @@ export const fetchUser = createAsyncThunk(
 // Thunk for updating the user
 export const updateUser = createAsyncThunk(
     'auth/updateUser',
-    async ({id, data}:{ id: string; data: Partial<User> }, {rejectWithValue}) => {
+    async ({id, data}: { id: string; data: Partial<User> }, {rejectWithValue}) => {
         try {
             const token = Cookies.get('token');
             if (!token) {
@@ -188,7 +192,7 @@ export const updateUser = createAsyncThunk(
 // Thunk for resetting the password
 export const resetPassword = createAsyncThunk(
     'auth/resetPassword',
-    async ({email}:{ email: string }, {rejectWithValue}) => {
+    async ({email}: { email: string }, {rejectWithValue}) => {
         try {
             const raw = JSON.stringify({email});
             const config = {headers: {'Content-Type': 'application/json'}};
@@ -217,7 +221,11 @@ export const resetPassword = createAsyncThunk(
 // Thunk for changing the password
 export const changePassword = createAsyncThunk(
     'auth/changePassword',
-    async ({email, password, confirmPassword}:{email: string; password: string; confirmPassword: string }, {rejectWithValue}) => {
+    async ({email, password, confirmPassword}: {
+        email: string;
+        password: string;
+        confirmPassword: string
+    }, {rejectWithValue}) => {
         try {
             const token = Cookies.get('token');
             if (!token) {
@@ -250,7 +258,7 @@ export const changePassword = createAsyncThunk(
 );
 
 
-export const fetchUserWithdrawalAccounts = createAsyncThunk('auth/withdrawalAccount', async (id:string, {rejectWithValue}) => {
+export const fetchUserWithdrawalAccounts = createAsyncThunk('auth/withdrawalAccount', async (id: string, {rejectWithValue}) => {
     try {
         const response = await axios.get(`${common.baseUrl}/api/v1/payouts/accounts/${id}`)
         console.log(response.data)
@@ -269,6 +277,34 @@ export const fetchUserWithdrawalAccounts = createAsyncThunk('auth/withdrawalAcco
     }
 })
 
+export const autoLoginUserAsync = createAsyncThunk('auth/autoLoginUser', async (_, {rejectWithValue, dispatch}) => {
+    try {
+        const res = await axios.get(`${common.baseUrl}/api/v1/auth/autoLogin`, getConfig())
+        console.log(res)
+        if (res.status === 200) {
+            const {token, user} = res.data;
+            console.log(user, token)
+            setAuthCookies(token, user); // Store tokens in cookies
+            dispatch(fetchEvents(user.id));
+            dispatch(fetchTransactions(user.id))
+            dispatch(fetchUserVenues(user.id))
+            dispatch(fetchUserWallets(user.id))
+            return {user, token};
+        } else {
+            return rejectWithValue({message: 'Failed to auto login'});
+        }
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            if (error.response?.status === 403) {
+                clearAuthCookies();
+                redirect('/login');
+            }
+            return rejectWithValue(error.response?.data?.msg);
+        } else {
+            return rejectWithValue('Failed to user account');
+        }
+    }
+});
 
 // Auth Slice
 const authSlice = createSlice({
@@ -284,12 +320,14 @@ const authSlice = createSlice({
             redirect('/login');
         },
         checkUser(state) {
+            state.loading = true
             const user = Cookies.get('user');
             const token = Cookies.get('token');
             if (user && token) {
                 state.user = JSON.parse(user);
                 state.token = token;
             }
+            state.loading = false;
         }
     },
     extraReducers: (builder) => {
@@ -372,7 +410,7 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            .addCase(fetchUserWithdrawalAccounts.pending,(state) => {
+            .addCase(fetchUserWithdrawalAccounts.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
@@ -380,10 +418,23 @@ const authSlice = createSlice({
                 state.accounts = action.payload
                 state.loading = false;
                 state.error = null;
-            }) .addCase(fetchUserWithdrawalAccounts.rejected, (state, action) => {
+            }).addCase(fetchUserWithdrawalAccounts.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
-        });
+        })
+            .addCase(autoLoginUserAsync.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(autoLoginUserAsync.fulfilled, (state, action) => {
+                state.loading = false;
+                state.token = action.payload.token;
+                state.user = action.payload.user;
+            })
+            .addCase(autoLoginUserAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            });
     },
 });
 

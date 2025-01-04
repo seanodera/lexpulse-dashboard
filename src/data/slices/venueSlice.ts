@@ -87,11 +87,18 @@ export const fetchVenueById = createAsyncThunk(
 );
 
 export const fetchUserVenues = createAsyncThunk(
-    'venues/fetchUserVenues', async (id: string) => {
-        const config = getRequestHeaders();
-        const response = await axios.get(`${common.baseUrl}/api/v1/venues/user/${id}`, config);
-        return response.data.data;
-
+    'venues/fetchUserVenues', async (id: string,{rejectWithValue}) => {
+        try {
+            const config = getRequestHeaders();
+            const response = await axios.get(`${common.baseUrl}/api/v1/venues/user/${id}`, config);
+            return response.data.data;
+        } catch (error) {
+            console.log(error);
+            if (error instanceof AxiosError) {
+                return rejectWithValue(error.response?.data?.error || 'Failed to fetch venues');
+            }
+            return rejectWithValue('Failed to fetch venues');
+        }
     }
 )
 export const updateVenue = createAsyncThunk(

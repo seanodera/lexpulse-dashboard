@@ -5,9 +5,6 @@ import { useAppDispatch } from "../../hooks/hooks.ts";
 
 export default function CreateVenueTableModal({isVisible, toggleModal, venue}: { isVisible: boolean, toggleModal: (value:boolean) => void, venue: Venue }) {
     const dispatch = useAppDispatch();
-    const showModal = () => {
-        toggleModal(true);
-    };
 
     const handleCancel = () => {
         toggleModal(false);
@@ -23,10 +20,6 @@ export default function CreateVenueTableModal({isVisible, toggleModal, venue}: {
     };
 
     return (
-        <>
-            <Button type="primary" onClick={showModal}>
-                Create Venue Table
-            </Button>
             <Modal
                 title="Create Venue Table"
                 open={isVisible}
@@ -39,32 +32,32 @@ export default function CreateVenueTableModal({isVisible, toggleModal, venue}: {
                         name="name"
                         rules={[{required: true, message: 'Please input the name!'}]}
                     >
-                        <Input/>
+                        <Input className={'rounded-lg'}/>
                     </Form.Item>
                     <Form.Item
                         label="Description"
                         name="description"
                         rules={[{required: true, message: 'Please input the description!'}]}
                     >
-                        <Input.TextArea rows={3}/>
+                        <Input.TextArea rows={3} className={'rounded-lg'}/>
                     </Form.Item>
                     <Form.Item
                         label="Minimum Spend"
                         name="minimumSpend"
                         rules={[{required: true, message: 'Please input the minimum spend!'}]}
                     >
-                        <Input type="number"/>
+                        <Input type="number" className={'rounded-lg'}/>
                     </Form.Item>
                     <Form.Item label={'available Tables'} name="available" rules={[{required: true, message: 'Please input the available tables!'}]}>
-                        <Input type={'number'} defaultValue={0}/>
+                        <Input type={'number'} defaultValue={0} className={'rounded-lg'}/>
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit">
-                            Submit
+                            Add Table
                         </Button>
                     </Form.Item>
                 </Form>
             </Modal>
-        </>
+
     );
 }
